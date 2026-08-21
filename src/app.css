@@ -1,0 +1,249 @@
+/*
+ * Dastan design system.
+ *
+ * Ground: Persian illuminated manuscripts. Ivory paper, lapis ultramarine,
+ * saffron gold used only where progress is earned. The reader page stays
+ * austere; the boldness is spent on the bookshelf spines.
+ */
+
+:root {
+	/* Ink & paper — overridden per theme below */
+	--paper: #f7f2e7;
+	--paper-raised: #fffdf7;
+	--paper-sunken: #efe8d8;
+	--ink: #22252b;
+	--ink-soft: #5a5f6b;
+	--ink-faint: #8b8f9a;
+	--rule: #ddd4bf;
+
+	/* Fixed brand colours */
+	--lapis: #1f4e8c;
+	--lapis-soft: #3c6dad;
+	--lapis-wash: #e6ecf5;
+	--saffron: #d9a036;
+	--saffron-wash: #f6ecd6;
+	--alarm: #9c3025;
+
+	/* Type */
+	--font-read: 'Literata', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+	--font-rtl: 'Vazirmatn', 'Tahoma', system-ui, sans-serif;
+	--font-ui:
+		system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+	/* Reading size — the learner can change this in Settings */
+	--read-size: 18px;
+
+	/* Space & shape */
+	--radius: 10px;
+	--radius-lg: 16px;
+	--shadow-page: 0 1px 2px rgb(34 37 43 / 0.06), 0 8px 24px rgb(34 37 43 / 0.07);
+	--shadow-pop: 0 4px 12px rgb(34 37 43 / 0.12), 0 16px 40px rgb(34 37 43 / 0.16);
+}
+
+:root[data-theme='sepia'] {
+	--paper: #f0e4ce;
+	--paper-raised: #f8efdd;
+	--paper-sunken: #e5d6ba;
+	--ink: #3a2f22;
+	--ink-soft: #6b5a45;
+	--ink-faint: #97866f;
+	--rule: #d6c3a1;
+	--lapis-wash: #e6dcc8;
+	--saffron-wash: #efdfbe;
+}
+
+:root[data-theme='night'] {
+	--paper: #14161c;
+	--paper-raised: #1d2029;
+	--paper-sunken: #0f1116;
+	--ink: #d8d3c4;
+	--ink-soft: #9d998d;
+	--ink-faint: #6f6c64;
+	--rule: #2c3039;
+	--lapis: #6f9ad6;
+	--lapis-soft: #5680b9;
+	--lapis-wash: #1c2530;
+	--saffron: #e0b055;
+	--saffron-wash: #2a2418;
+	--alarm: #d9705f;
+	--shadow-page: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+	--shadow-pop: 0 4px 12px rgb(0 0 0 / 0.45), 0 16px 40px rgb(0 0 0 / 0.5);
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	min-height: 100%;
+}
+
+body {
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--font-ui);
+	font-size: 16px;
+	line-height: 1.5;
+	-webkit-text-size-adjust: 100%;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Farsi and every other RTL script gets Vazirmatn, wherever it appears. */
+[dir='rtl'],
+:root[data-native-rtl='true'] body {
+	font-family: var(--font-rtl);
+}
+
+h1,
+h2,
+h3 {
+	font-weight: 600;
+	line-height: 1.25;
+	margin: 0;
+}
+
+a {
+	color: var(--lapis);
+}
+
+/* Focus that is always visible — this app is used one-handed on a phone and
+   with a keyboard on a laptop, and both deserve to see where they are. */
+:focus-visible {
+	outline: 2px solid var(--lapis);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+}
+
+/* --- Shared primitives -------------------------------------------------- */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5em;
+	min-height: 44px;
+	padding: 0 1.1em;
+	border: 1px solid var(--rule);
+	border-radius: var(--radius);
+	background: var(--paper-raised);
+	color: var(--ink);
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+	border-color: var(--lapis-soft);
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-primary {
+	background: var(--lapis);
+	border-color: var(--lapis);
+	color: #fff;
+}
+
+:root[data-theme='night'] .btn-primary {
+	color: #0f1116;
+}
+
+.btn-primary:hover {
+	background: var(--lapis-soft);
+	border-color: var(--lapis-soft);
+}
+
+.btn-quiet {
+	background: transparent;
+	border-color: transparent;
+}
+
+.btn-danger {
+	color: var(--alarm);
+	border-color: color-mix(in srgb, var(--alarm) 40%, transparent);
+}
+
+.field {
+	display: block;
+	margin-bottom: 1.25rem;
+}
+
+.field-label {
+	display: block;
+	font-size: 0.82rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	color: var(--ink-soft);
+	margin-bottom: 0.4rem;
+}
+
+.field-hint {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--ink-soft);
+	margin-top: 0.4rem;
+	line-height: 1.5;
+}
+
+input[type='text'],
+input[type='password'],
+select,
+textarea {
+	width: 100%;
+	min-height: 44px;
+	padding: 0.55em 0.75em;
+	font: inherit;
+	color: var(--ink);
+	background: var(--paper-raised);
+	border: 1px solid var(--rule);
+	border-radius: var(--radius);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+	border-color: var(--lapis);
+}
+
+.card {
+	background: var(--paper-raised);
+	border: 1px solid var(--rule);
+	border-radius: var(--radius-lg);
+	padding: 1.25rem;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
