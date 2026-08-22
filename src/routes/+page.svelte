@@ -108,7 +108,9 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="shelf-empty">{t(shelfBlurb(shelf))}</p>
+				<a class="shelf-empty" href="{base}/new/?kind={NEW_FOR_SHELF[shelf]}">
+					{t(`shelf.empty.${shelf}` as StringKey)}
+				</a>
 			{/if}
 		</section>
 	{/each}
@@ -207,12 +209,21 @@
 	}
 
 	.shelf-empty {
+		display: block;
 		margin-top: var(--s4);
 		padding: var(--s5);
 		border: 1px dashed var(--rule-strong);
 		border-radius: var(--radius);
-		color: var(--ink-faint);
+		color: var(--ink-soft);
 		font-size: var(--text-sm);
+		text-decoration: none;
+		transition: border-color 0.15s ease, background 0.15s ease;
+	}
+
+	.shelf-empty:hover {
+		border-color: var(--lapis);
+		background: var(--lapis-wash);
+		color: var(--lapis-deep);
 	}
 
 	.starters {

@@ -11,6 +11,10 @@ export const en = {
 	'nav.standing': 'Where you are',
 	'nav.finished': '{n} finished',
 
+	'shelf.empty.my-story': 'Tell Dastan about your life and it will write your book.',
+	'shelf.empty.my-career': 'Name a field and learn its words inside stories.',
+	'shelf.empty.documents': 'Upload anything you want to understand — Dastan turns it into stories.',
+	'shelf.empty.curiosity': 'Ask about anything and read about it at your level.',
 	'shelf.documents': 'From My Files',
 	'shelf.documents.blurb': 'Any document you upload, turned into stories you can read.',
 	'shelf.new': 'Start something new',

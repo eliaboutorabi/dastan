@@ -13,6 +13,10 @@ export const fa: Record<StringKey, string> = {
 	'nav.standing': 'کجای کاری',
 	'nav.finished': '{n} تمام‌شده',
 
+	'shelf.empty.my-story': 'از زندگی‌ات بگو تا داستان کتابت را بنویسد.',
+	'shelf.empty.my-career': 'یک رشته نام ببر و واژه‌هایش را داخل داستان یاد بگیر.',
+	'shelf.empty.documents': 'هر چه می‌خواهی بفهمی بارگذاری کن — داستان تبدیلش می‌کند به داستان.',
+	'shelf.empty.curiosity': 'دربارهٔ هر چیزی بپرس و در سطح خودت بخوانش.',
 	'shelf.documents': 'از فایل‌های من',
 	'shelf.documents.blurb': 'هر سندی که بارگذاری کنی، تبدیل به داستان می‌شود.',
 	'shelf.new': 'شروع تازه',
