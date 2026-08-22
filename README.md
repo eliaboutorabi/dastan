@@ -20,6 +20,10 @@ Three bookshelves:
 
 While reading: tap a word for its meaning **in that sentence** (not a dictionary lookup), tap the ¶ mark for the whole sentence, press play for read-aloud with the current word highlighted. Finishing a story unlocks the next one.
 
+### Two languages, not one
+
+The app keeps **the language the interface speaks** and **the language you think in** as separate settings, because they are separate things. The interface is in English; a tapped word is explained twice — once in plain English, which is the version that teaches, and once in your own language underneath, so a hard word never becomes a stuck moment. The interviewer talks to you in your language whatever the interface is set to.
+
 The app never asks you to rate yourself. It watches how often you tap: many taps means the next story comes out a little easier, almost none means it goes up a level.
 
 ## Status
