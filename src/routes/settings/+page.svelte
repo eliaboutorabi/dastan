@@ -112,7 +112,7 @@
 	</header>
 
 	<section class="card">
-		<h2>{t('settings.provider')}</h2>
+		<h2>{t('settings.ai')}</h2>
 
 		<label class="field">
 			<span class="field-label">{t('settings.provider')}</span>

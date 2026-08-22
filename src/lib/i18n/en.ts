@@ -64,6 +64,7 @@ export const en = {
 	'words.count': '{n} words',
 
 	'settings.title': 'Settings',
+	'settings.ai': 'Your AI',
 	'settings.provider': 'AI provider',
 	'settings.provider.anthropic': 'Anthropic (Claude)',
 	'settings.provider.openai': 'OpenAI',

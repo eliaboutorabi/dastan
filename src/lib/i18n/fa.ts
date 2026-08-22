@@ -66,6 +66,7 @@ export const fa: Record<StringKey, string> = {
 	'words.count': '{n} واژه',
 
 	'settings.title': 'تنظیمات',
+	'settings.ai': 'هوش مصنوعی تو',
 	'settings.provider': 'ارائه‌دهندهٔ هوش مصنوعی',
 	'settings.provider.anthropic': 'Anthropic (Claude)',
 	'settings.provider.openai': 'OpenAI',
