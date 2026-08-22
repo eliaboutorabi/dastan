@@ -13,6 +13,7 @@
 	import { settings, type ThemeId } from '$lib/settings/store.svelte';
 	import { library } from '$lib/stores/library.svelte';
 	import { recalibrate } from '$lib/agents/ladder';
+	import { ensureStoryWritten } from '$lib/agents/author';
 	import type { Story, WordSense } from '$lib/types';
 
 
@@ -137,10 +138,20 @@
 		}
 	}
 
+	let nextStoryId = $state<string | null>(null);
+	let unlocking = $state(false);
+	let unlockError = $state<string | null>(null);
+
+	/**
+	 * Finishing recalibrates the level from the tap rate, then opens the next
+	 * story — writing it on the spot if the book has only been planned that far.
+	 * That is the lazy half of generation: the wait is one story, never a book.
+	 */
 	async function finishStory() {
 		if (!story || !parsed) return;
 		speaker.stop();
-		const { direction } = recalibrate(story.level, story.tapCount, parsed.wordCount);
+		const { level, direction } = recalibrate(story.level, story.tapCount, parsed.wordCount);
+		settings.set('level', level);
 		const updated: Story = {
 			...story,
 			status: 'finished',
@@ -149,6 +160,7 @@
 		story = updated;
 		await library.save(updated);
 		finished = true;
+		void openNext(updated);
 		// The learner is never shown the tap rate or a level number — only this
 		// one gentle sentence about what happens next.
 		calibrationNote =
@@ -157,6 +169,42 @@
 				: direction === 'harder'
 					? t('reader.finished.harder')
 					: t('reader.finished.body');
+	}
+
+	async function openNext(justFinished: Story) {
+		if (!justFinished.bookId) return;
+		const book = library.books.find((candidate) => candidate.id === justFinished.bookId);
+		if (!book) return;
+
+		const nextSeq = justFinished.seq + 1;
+		if (nextSeq > book.outline.length) return;
+
+		const already = book.storyIds[nextSeq - 1];
+		if (already) {
+			const existing = library.stories.find((candidate) => candidate.id === already);
+			if (existing) {
+				if (existing.status === 'locked') {
+					await library.save({ ...existing, status: 'available' });
+				}
+				nextStoryId = already;
+				return;
+			}
+		}
+
+		const source = library.sourceOf(book);
+		if (!source) return;
+
+		unlocking = true;
+		unlockError = null;
+		try {
+			const next = await ensureStoryWritten(book, source, nextSeq);
+			await library.load();
+			nextStoryId = next.id;
+		} catch (caught) {
+			unlockError = friendlyError(caught);
+		} finally {
+			unlocking = false;
+		}
 	}
 
 	const speeds = [0.7, 1, 1.25];
@@ -243,7 +291,19 @@
 						</svg>
 						<p class="celebration-title">{t('reader.finished.title')}</p>
 						<p>{calibrationNote}</p>
-						<a class="btn" href="{base}/">{t('nav.shelf')}</a>
+						{#if unlocking}
+							<p class="muted-line">{t('book.writing')}</p>
+						{:else if unlockError}
+							<p class="muted-line error">{unlockError}</p>
+						{/if}
+						<div class="celebration-actions">
+							{#if nextStoryId}
+								<a class="btn btn-primary" href="{base}/read/{nextStoryId}/">
+									{t('reader.next')}
+								</a>
+							{/if}
+							<a class="btn" href="{base}/">{t('nav.shelf')}</a>
+						</div>
 					</div>
 				{:else}
 					<button class="btn btn-primary" type="button" onclick={finishStory}>
@@ -347,11 +407,20 @@
 
 	/* The sanctuary: one column, generous margins, a measure that stops the
 	   eye getting lost on a wide screen. */
+	/* The sanctuary: one column, a measure that stops the eye getting lost on
+	   a wide screen, and margins that grow with the window rather than staying
+	   at phone width. */
 	article {
 		max-width: 65ch;
 		margin: 0 auto;
-		padding: 1rem 1.4rem 3rem;
+		padding: var(--s4) var(--s5) var(--s8);
 		font-family: var(--font-read);
+	}
+
+	@media (min-width: 900px) {
+		article {
+			padding-top: var(--s6);
+		}
 	}
 
 	h1 {
@@ -529,8 +598,17 @@
 		color: var(--ink) !important;
 	}
 
-	.celebration .btn {
-		margin-top: 0.6rem;
+	.celebration-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: var(--s2);
+		margin-top: var(--s3);
+	}
+
+	.muted-line {
+		font-size: var(--text-sm);
+		color: var(--ink-faint);
 	}
 
 	.bar {
@@ -542,11 +620,30 @@
 		align-items: center;
 		justify-content: center;
 		flex-wrap: wrap;
-		gap: 0.5rem;
-		padding: 0.55rem 0.9rem calc(0.55rem + env(safe-area-inset-bottom));
+		gap: var(--s2);
+		padding: var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom));
 		background: color-mix(in srgb, var(--paper) 93%, transparent);
-		backdrop-filter: blur(12px);
+		backdrop-filter: blur(14px);
 		border-top: 1px solid var(--rule);
+	}
+
+	/* On a laptop the controls stop being a full-width bar and become a
+	   floating panel, so they read as a tool beside the page rather than a
+	   phone chrome stretched across a monitor. */
+	@media (min-width: 900px) {
+		.bar {
+			inset-inline: auto;
+			left: 50%;
+			transform: translateX(-50%);
+			bottom: var(--s5);
+			width: max-content;
+			max-width: calc(100vw - 2 * var(--s5));
+			padding: var(--s2);
+			border: 1px solid var(--rule);
+			border-radius: 999px;
+			box-shadow: var(--shadow-pop);
+			background: color-mix(in srgb, var(--paper-raised) 96%, transparent);
+		}
 	}
 
 	.play {

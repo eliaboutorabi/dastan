@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { eraseAll, exportAll, importAll, type DastanBackup } from '$lib/db';
 	import { languageOptions, uiLanguageOptions, type StringKey } from '$lib/i18n';
 	import { t, uiDir } from '$lib/i18n/ui.svelte';
@@ -171,6 +172,38 @@
 		{#if harnessResult}
 			<p class="outcome {harnessResult.kind}">{harnessResult.message}</p>
 		{/if}
+	</section>
+
+	<section class="card">
+		<h2>{t('level.title')}</h2>
+		<p class="level-now">
+			<span class="pill pill-gold">{t('level.current', { n: settings.current.level })}</span>
+			<span class="level-when">
+				{settings.current.levelCheckedAt
+					? t('level.checked', {
+							date: new Date(settings.current.levelCheckedAt).toLocaleDateString()
+						})
+					: t('level.never')}
+			</span>
+		</p>
+		<p class="field-hint level-blurb">{t('level.blurb')}</p>
+		<div class="actions">
+			<a class="btn btn-primary" href="{base}/settings/level/">
+				{settings.current.levelCheckedAt ? t('level.redo') : t('level.start')}
+			</a>
+		</div>
+
+		<label class="field manual">
+			<span class="field-label">{t('level.manual')}</span>
+			<input
+				type="range"
+				min="1"
+				max="20"
+				step="1"
+				value={settings.current.level}
+				oninput={(event) => settings.set('level', Number(event.currentTarget.value))}
+			/>
+		</label>
 	</section>
 
 	<section class="card">
@@ -377,5 +410,27 @@
 
 	input[type='range'] {
 		accent-color: var(--lapis);
+	}
+
+	.level-now {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--s2);
+		margin-bottom: var(--s2);
+	}
+
+	.level-when {
+		font-size: var(--text-sm);
+		color: var(--ink-faint);
+	}
+
+	.level-blurb {
+		margin-bottom: var(--s4);
+	}
+
+	.manual {
+		margin-top: var(--s5);
+		margin-bottom: 0;
 	}
 </style>

@@ -17,30 +17,72 @@ export const STORY_AUTHOR_PROMPT_VERSION = 'story-author/v1';
 
 /* --- planning the book --------------------------------------------------- */
 
+/** What the book is being written from. The plan changes shape accordingly. */
+export type SourceBrief =
+	| { kind: 'life'; material: string }
+	| { kind: 'document'; material: string; documentName: string }
+	| { kind: 'career'; material: string; topic: string }
+	| { kind: 'topic'; material: string; topic: string };
+
+function sourceInstructions(source: SourceBrief, targetLanguageName: string): string {
+	switch (source.kind) {
+		case 'life':
+			return `WHAT YOU ARE WRITING FROM
+This is the learner's own life, told in their own words.
+
+Write the stories in the FIRST PERSON — "I" — because these are the exact sentences they will one day say out loud about themselves. They already know what happens, because it happened to them. That is the design: no attention goes to "what is this about", so all of it goes to "how does ${targetLanguageName} say this".
+
+THE ARC
+Open with identity and family, in the present tense. Then childhood and school, where the past tense arrives exactly when the difficulty ladder allows it. Then work, and the decision to leave. Then arriving, the hard part, and the first small wins. The last story is always the whole life told the way you would tell it at a dinner table — the rich, fluent version. That is the one they will give when someone asks "tell me about yourself".`;
+
+		case 'document':
+			return `WHAT YOU ARE WRITING FROM
+A document the learner uploaded: "${source.documentName}". They chose it because they want to understand it, and they want to learn ${targetLanguageName} while they do.
+
+Your job is not to summarise it. A summary teaches nobody a language. Your job is to find the *story* inside it and tell that — a person doing the thing the document describes, a problem the document solves, a decision someone had to make.
+
+If it is a resume, each story follows one job or one project, told in the first person, and the book becomes rehearsal for talking about that career out loud.
+If it is a paper or a report, invent a character who runs into what it describes: an engineer whose bridge is cracking, a nurse who notices the pattern first.
+If it is notes or a manual, dramatise the moment somebody needs to know this.
+
+Every factual claim must come from the document. Invented people may not state invented facts.`;
+
+		case 'career':
+			return `WHAT YOU ARE WRITING FROM
+The learner asked to learn the working vocabulary of "${source.topic}", in ${targetLanguageName}.
+
+They already know this field in their own language. Do not explain the profession to them — they know what an invoice is. What they do not know is the word, the phrase around it, and how a colleague would say it out loud in an office.
+
+These are workplace stories: a small company, a deadline, a mistake found and fixed, a vendor who calls twice. The terms must DO things in the plot. If the terms could be swapped for other words and the story would still work, the story has failed.`;
+
+		case 'topic':
+			return `WHAT YOU ARE WRITING FROM
+The learner is curious about "${source.topic}", and the material below was gathered from open reference sources.
+
+Every factual claim in your stories must come from that material. If it does not say something, you do not know it — leave it out rather than guess. Numbers, dates and names especially.
+
+The people and the scene are yours to invent; that is what makes it a story instead of an article. Invented characters may not state invented facts.`;
+	}
+}
+
 export function bookOutlineSystemPrompt(args: {
+	source: SourceBrief;
 	nativeLanguageName: string;
 	targetLanguageName: string;
 	startLevel: number;
 }): string {
-	return `You are an author who writes graded readers, and you have been given something unusual: the real life story of the person who will read them.
+	return `You are an author who writes graded readers — short stories built so that someone learning ${args.targetLanguageName} can actually finish them.
 
-You are going to plan a book of short stories in ${args.targetLanguageName} about this person's own life, told in the first person — "I". They already know what happens, because it happened to them. That is the design: no attention goes to "what is this about", so all of it goes to "how does ${args.targetLanguageName} say this".
+${sourceInstructions(args.source, args.targetLanguageName)}
 
 DECIDE THE COUNT YOURSELF
-There is no target number of stories. Read the corpus and decide honestly how many stories the material can carry, each bringing genuinely new events, people or depth. A thin corpus might make 8. A rich one might make 25 or more. Never pad: if you cannot make story N genuinely different from story N-1, the book simply ends at N-1. Padding is the one thing that will make this person stop reading.
-
-THE ARC
-- Open with identity and family, in the present tense — who I am, who is around me.
-- Then childhood and school, where the past tense arrives exactly when the difficulty ladder allows it.
-- Then work, and the decision to leave.
-- Then arriving, the hard part, and the first small wins.
-- The last story is always the whole life told the way you would tell it at a dinner table — the rich, fluent version. This is the one they will one day say out loud when someone asks "tell me about yourself".
+There is no target number of stories. Read the material and decide honestly how many stories it can carry, each bringing genuinely new events, people or depth. Thin material might make 6. Rich material might make 25 or more. Never pad: if you cannot make story N genuinely different from story N-1, the book simply ends at N-1. Padding is the one thing that will make this person stop reading.
 
 DIFFICULTY
 The first story is written at level ${args.startLevel} of 20 — easy enough that this person can read it today, without help. The last is at level 20. Spread the levels evenly across however many stories you chose.
 
 Return JSON and nothing else:
-{"stories": [{"seq": 1, "title": "<title in ${args.targetLanguageName}>", "titleNative": "<the same title in ${args.nativeLanguageName}>", "summary": "<one line, in English, on what happens in this story>", "level": <integer>}], "note": "<one sentence, in ${args.nativeLanguageName}, telling the learner why you chose this many stories>"}`;
+{"bookTitle": "<a title for the whole book, in ${args.targetLanguageName}>", "bookTitleNative": "<the same, in ${args.nativeLanguageName}>", "stories": [{"seq": 1, "title": "<in ${args.targetLanguageName}>", "titleNative": "<in ${args.nativeLanguageName}>", "summary": "<one line, in English, on what happens in this story>", "level": <integer>}], "note": "<one sentence, in ${args.nativeLanguageName}, telling the learner why you chose this many stories>"}`;
 }
 
 /* --- writing one story --------------------------------------------------- */
@@ -60,7 +102,7 @@ export interface StoryRequest {
 	learningWords: VocabEntry[];
 	/** Every new word from the previous story in this book. */
 	previousNewWords: string[];
-	/** First person for My Story; third person for career and curiosity. */
+	/** First person for a life or a resume; third person elsewhere. */
 	voice: 'first-person' | 'third-person';
 }
 

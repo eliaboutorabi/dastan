@@ -17,6 +17,14 @@ export interface Settings {
 	/** The language the learner thinks in — used for meanings and the interview. */
 	nativeLanguage: string;
 	targetLanguage: string;
+	/**
+	 * The reading level, 1–20. Lives here rather than on the profile because
+	 * every screen needs it synchronously, and because it exists from the first
+	 * run — before there is any profile to hang it on.
+	 */
+	level: number;
+	/** When the placement check last ran, so Settings can say so. */
+	levelCheckedAt?: string;
 	theme: ThemeId;
 	/** Reading text size in px. */
 	textSize: number;
@@ -39,6 +47,7 @@ const DEFAULTS: Settings = {
 	uiLanguage: 'en',
 	nativeLanguage: 'fa',
 	targetLanguage: 'en',
+	level: 3,
 	theme: 'paper',
 	textSize: 18,
 	voiceURI: '',

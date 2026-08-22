@@ -26,7 +26,9 @@
 		"@langchain/langgraph": "^1.4.12",
 		"@langchain/openai": "^1.5.10",
 		"deepagents": "^1.13.0",
-		"idb": "^8.0.3"
+		"idb": "^8.0.3",
+		"mammoth": "^1.12.1",
+		"pdfjs-dist": "^6.2.108"
 	},
 	"description": "Dastan — a personal graded-reading app that turns a learner's own life into their language textbook"
 }

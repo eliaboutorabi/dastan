@@ -23,7 +23,7 @@ export default {
 			// Shells only — `ssr` is off, so these are empty documents that boot
 			// the SPA. Prerendering them means real 200s for the common routes
 			// instead of leaning on the 404 fallback for everything.
-			entries: ['/', '/words', '/settings']
+			entries: ['/', '/new', '/library', '/words', '/settings', '/settings/level']
 		}
 	}
 };

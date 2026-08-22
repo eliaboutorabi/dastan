@@ -1,8 +1,10 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type {
+	Book,
 	LearnerProfile,
 	LifeCorpus,
 	SentenceCacheEntry,
+	Source,
 	Story,
 	Track,
 	TranslationCacheEntry,
@@ -14,26 +16,37 @@ interface DastanDB extends DBSchema {
 	stories: { key: string; value: Story; indexes: { 'by-shelf': string } };
 	vocab: { key: string; value: VocabEntry; indexes: { 'by-status': string } };
 	tracks: { key: string; value: Track };
+	sources: { key: string; value: Source };
+	books: { key: string; value: Book; indexes: { 'by-shelf': string } };
 	wordSenses: { key: string; value: TranslationCacheEntry };
 	sentences: { key: string; value: SentenceCacheEntry };
 }
 
 const DB_NAME = 'dastan';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<DastanDB>> | null = null;
 
 function db() {
 	dbPromise ??= openDB<DastanDB>(DB_NAME, DB_VERSION, {
-		upgrade(database) {
-			database.createObjectStore('meta');
-			const stories = database.createObjectStore('stories', { keyPath: 'id' });
-			stories.createIndex('by-shelf', 'shelf');
-			const vocab = database.createObjectStore('vocab', { keyPath: 'word' });
-			vocab.createIndex('by-status', 'status');
-			database.createObjectStore('tracks', { keyPath: 'id' });
-			database.createObjectStore('wordSenses', { keyPath: 'key' });
-			database.createObjectStore('sentences', { keyPath: 'key' });
+		// Upgrades are additive and each version guard runs in order, so someone
+		// who already has stories and a vocabulary keeps every one of them.
+		upgrade(database, oldVersion) {
+			if (oldVersion < 1) {
+				database.createObjectStore('meta');
+				const stories = database.createObjectStore('stories', { keyPath: 'id' });
+				stories.createIndex('by-shelf', 'shelf');
+				const vocab = database.createObjectStore('vocab', { keyPath: 'word' });
+				vocab.createIndex('by-status', 'status');
+				database.createObjectStore('tracks', { keyPath: 'id' });
+				database.createObjectStore('wordSenses', { keyPath: 'key' });
+				database.createObjectStore('sentences', { keyPath: 'key' });
+			}
+			if (oldVersion < 2) {
+				database.createObjectStore('sources', { keyPath: 'id' });
+				const books = database.createObjectStore('books', { keyPath: 'id' });
+				books.createIndex('by-shelf', 'shelf');
+			}
 		}
 	});
 	return dbPromise;
@@ -144,6 +157,34 @@ export async function putTrack(track: Track): Promise<void> {
 	await (await db()).put('tracks', plain(track));
 }
 
+/* --- sources & books ------------------------------------------------------ */
+
+export async function allSources(): Promise<Source[]> {
+	const sources = await (await db()).getAll('sources');
+	return sources.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function getSource(id: string): Promise<Source | undefined> {
+	return (await db()).get('sources', id);
+}
+
+export async function putSource(source: Source): Promise<void> {
+	await (await db()).put('sources', plain(source));
+}
+
+export async function allBooks(): Promise<Book[]> {
+	const books = await (await db()).getAll('books');
+	return books.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function getBook(id: string): Promise<Book | undefined> {
+	return (await db()).get('books', id);
+}
+
+export async function putBook(book: Book): Promise<void> {
+	await (await db()).put('books', plain(book));
+}
+
 /* --- translation caches -------------------------------------------------- */
 
 /** Cache key for a contextual word sense: the word *and* the sentence it sits in. */
@@ -180,6 +221,8 @@ export interface DastanBackup {
 	stories: Story[];
 	vocab: VocabEntry[];
 	tracks: Track[];
+	sources: Source[];
+	books: Book[];
 }
 
 export async function exportAll(): Promise<DastanBackup> {
@@ -191,7 +234,9 @@ export async function exportAll(): Promise<DastanBackup> {
 		corpus: await getCorpus(),
 		stories: await allStories(),
 		vocab: await allVocab(),
-		tracks: await allTracks()
+		tracks: await allTracks(),
+		sources: await allSources(),
+		books: await allBooks()
 	};
 }
 
@@ -199,17 +244,24 @@ export async function exportAll(): Promise<DastanBackup> {
 export async function importAll(backup: DastanBackup): Promise<number> {
 	if (backup?.format !== 'dastan-backup') throw new Error('Not a Dastan backup file');
 	const database = await db();
-	const tx = database.transaction(['meta', 'stories', 'vocab', 'tracks'], 'readwrite');
+	const tx = database.transaction(
+		['meta', 'stories', 'vocab', 'tracks', 'sources', 'books'],
+		'readwrite'
+	);
 	await Promise.all([
 		tx.objectStore('stories').clear(),
 		tx.objectStore('vocab').clear(),
-		tx.objectStore('tracks').clear()
+		tx.objectStore('tracks').clear(),
+		tx.objectStore('sources').clear(),
+		tx.objectStore('books').clear()
 	]);
 	if (backup.profile) await tx.objectStore('meta').put(backup.profile, 'profile');
 	if (backup.corpus) await tx.objectStore('meta').put(backup.corpus, 'corpus');
 	for (const story of backup.stories ?? []) await tx.objectStore('stories').put(plain(story));
 	for (const word of backup.vocab ?? []) await tx.objectStore('vocab').put(plain(word));
 	for (const track of backup.tracks ?? []) await tx.objectStore('tracks').put(plain(track));
+	for (const source of backup.sources ?? []) await tx.objectStore('sources').put(plain(source));
+	for (const book of backup.books ?? []) await tx.objectStore('books').put(plain(book));
 	await tx.done;
 	return backup.stories?.length ?? 0;
 }
@@ -217,7 +269,7 @@ export async function importAll(backup: DastanBackup): Promise<number> {
 export async function eraseAll(): Promise<void> {
 	const database = await db();
 	const tx = database.transaction(
-		['meta', 'stories', 'vocab', 'tracks', 'wordSenses', 'sentences'],
+		['meta', 'stories', 'vocab', 'tracks', 'sources', 'books', 'wordSenses', 'sentences'],
 		'readwrite'
 	);
 	await Promise.all([
@@ -225,6 +277,8 @@ export async function eraseAll(): Promise<void> {
 		tx.objectStore('stories').clear(),
 		tx.objectStore('vocab').clear(),
 		tx.objectStore('tracks').clear(),
+		tx.objectStore('sources').clear(),
+		tx.objectStore('books').clear(),
 		tx.objectStore('wordSenses').clear(),
 		tx.objectStore('sentences').clear(),
 		tx.done

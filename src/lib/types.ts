@@ -18,13 +18,15 @@ export interface LifeCorpus {
 	updatedAt: string;
 }
 
-export type Shelf = 'my-story' | 'my-career' | 'curiosity';
+export type Shelf = 'my-story' | 'my-career' | 'curiosity' | 'documents';
 
 export interface Story {
 	id: string;
 	shelf: Shelf;
 	/** Set for career and curiosity sequences. */
 	trackId?: string;
+	/** The book this story belongs to. */
+	bookId?: string;
 	/** Position within its book or track, starting at 1. */
 	seq: number;
 	/** The ladder level this was written at, 1–20. */
@@ -109,4 +111,64 @@ export interface WordSense {
 	partOfSpeech: string;
 	/** One short line, only when the word is used in a non-obvious sense. */
 	note?: string;
+}
+
+/* -------------------------------------------------------------------------
+ * Sources and books.
+ *
+ * The three shelves are not three features. Underneath them there is one
+ * mechanism: something the learner gives the app becomes a book of graded
+ * stories. A life told out loud is a source. A research paper is a source. A
+ * topic typed into a box is a source. Keeping that single shape means adding
+ * a new kind of input later is a small job, not a new feature.
+ * ---------------------------------------------------------------------- */
+
+export type SourceKind =
+	/** The learner's own life, gathered by the interviewer agent. */
+	| 'life'
+	/** A file the learner uploaded — resume, paper, article, notes. */
+	| 'document'
+	/** A domain the learner asked to learn the working vocabulary of. */
+	| 'career'
+	/** Anything the learner is curious about, researched from open sources. */
+	| 'topic';
+
+export interface Source {
+	id: string;
+	kind: SourceKind;
+	/** What the learner calls it: "My life", "lease-accounting.pdf", "IFRS 16". */
+	title: string;
+	/** The material the author agent actually reads from. */
+	content: string;
+	/** Present for uploads. */
+	file?: { name: string; mime: string; size: number; pages?: number };
+	/** Present for conversations — kept so a book can always be re-made. */
+	transcript?: { role: 'user' | 'assistant'; content: string }[];
+	/** Present for researched topics. */
+	references?: { title: string; url: string }[];
+	createdAt: string;
+}
+
+/** One planned story, before it has been written. */
+export interface OutlineEntry {
+	seq: number;
+	title: string;
+	titleNative: string;
+	summary: string;
+	level: number;
+}
+
+export interface Book {
+	id: string;
+	sourceId: string;
+	shelf: Shelf;
+	title: string;
+	titleNative: string;
+	/** The author agent's plan, shown at the approval gate. */
+	outline: OutlineEntry[];
+	storyIds: string[];
+	/** One line from the author on why it chose this many stories. */
+	note?: string;
+	status: 'planning' | 'awaiting-approval' | 'active' | 'finished' | 'archived';
+	createdAt: string;
 }

@@ -22,13 +22,14 @@
 	);
 </script>
 
-<header class="masthead">
-	<h1>{t('words.title')}</h1>
-	<p>{t('words.count', { n: words.length })}</p>
-</header>
+<div class="page">
+	<header class="page-head">
+		<h1>{t('words.title')}</h1>
+		<p>{t('words.count', { n: words.length })}</p>
+	</header>
 
 {#if !words.length}
-	<p class="empty">{t('words.empty')}</p>
+	<p class="empty-state">{t('words.empty')}</p>
 {:else}
 	{#each groups as group (group.status)}
 		{#if group.entries.length}
@@ -79,30 +80,11 @@
 		{/if}
 	{/each}
 {/if}
+</div>
 
 <style>
-	.masthead {
-		padding: 2rem 1.25rem 0.5rem;
-	}
-
-	.masthead h1 {
-		font-family: var(--font-read);
-		font-size: 1.6rem;
-	}
-
-	.masthead p {
-		margin: 0.35rem 0 0;
-		color: var(--ink-soft);
-		font-size: 0.95rem;
-	}
-
-	.empty {
-		padding: 2rem 1.25rem;
-		color: var(--ink-faint);
-	}
-
 	section {
-		padding: 1.25rem 1.25rem 0;
+		margin-top: var(--s5);
 	}
 
 	section h2 {
@@ -114,8 +96,18 @@
 
 	ul {
 		list-style: none;
-		margin: 0.6rem 0 0;
+		margin: var(--s3) 0 0;
 		padding: 0;
+		display: grid;
+		gap: 0;
+		grid-template-columns: 1fr;
+	}
+
+	@media (min-width: 820px) {
+		ul {
+			grid-template-columns: 1fr 1fr;
+			column-gap: var(--s6);
+		}
 	}
 
 	li {
