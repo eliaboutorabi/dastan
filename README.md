@@ -10,15 +10,24 @@ The learner brings their own LLM key. Everything else (their stories, their word
 
 Reading is the fastest way into a language, but ordinary books fail a beginner: the first page has thirty unknown words and no reason to care. Dastan fixes both halves of that. The stories are about *your* life, so you already know what happens and all your attention goes to how the language says it — and they are written at a level that moves as you do.
 
-Three bookshelves:
+**Any source becomes a book.** That is the whole mechanism, and the shelves are just kinds of source:
 
-| Shelf | What it is |
+| Source | What it is |
 |---|---|
-| **My Story** | An AI biographer interviews you in your own language, then writes a book of short stories about your life — beginning near-zero and ending in fluent prose. The count is decided by how much material your life gives it, never padded to a number. |
-| **My Career** | You name a domain ("accounts payable"); a curriculum agent plans the 30–50 terms that live around it and teaches them inside workplace fiction. |
-| **Curiosity** | Any topic. A research agent gathers real facts from Wikipedia and Wikidata, then writes a story about them at your level. |
+| **A document** | Upload anything — a resume, a research paper, an article, your notes. PDF, Word, plain text or Markdown, read entirely inside your browser. Dastan finds the story inside it rather than summarising it. |
+| **Your life** | An AI biographer interviews you in your own language, then writes a book of short stories about you — beginning near-zero and ending in fluent prose. |
+| **A field of work** | Name a domain like "accounts payable"; a curriculum agent plans the 30–50 terms that live around it and teaches them inside workplace fiction. |
+| **A topic** | Anything you are curious about, researched from Wikipedia and Wikidata and written at your level. |
+
+Whatever the source, the flow is the same: the author agent reads it, plans a book, and shows you the plan. Nothing is written until you approve it, and you decide how many stories it holds. Then stories are written as you reach them, so the wait is one story and never a book.
+
+Every book you approve is kept in the **Library** with the material it came from. Starting something new never costs you something old.
 
 While reading: tap a word for its meaning **in that sentence** (not a dictionary lookup), tap the ¶ mark for the whole sentence, press play for read-aloud with the current word highlighted. Finishing a story unlocks the next one.
+
+### Finding your level
+
+Dastan never asks you to rate yourself. Once, in Settings, you read six short passages that climb the ladder and tap the words you do not know — the same thing you do while reading, so there is nothing new to learn. It ships in the bundle, so it costs nothing and works before you have a key. After that it keeps adjusting on its own, from how often you tap.
 
 ### Two languages, not one
 
@@ -28,9 +37,9 @@ The app never asks you to rate yourself. It watches how often you tap: many taps
 
 ## Status
 
-**Milestone 1 is complete.** The skeleton, the design system, Settings with the bring-your-own-key provider abstraction, the IndexedDB layer, and the bundled sample story readable end to end — tap-to-translate, sentence translation, karaoke read-aloud — plus the GitHub Pages deploy.
+Working today: the reader (tap-to-translate, sentence translation, karaoke read-aloud), document upload with in-browser PDF and Word parsing, the author agent with its approval gate and lazy story generation, the placement check, the Library, bring-your-own-key settings, export and import, and a layout built for both a phone and a laptop.
 
-Milestone 2 (the Farsi interviewer, level assessment, the approval gate and the generated book) and Milestone 3 (career tracks, the research agent, export/import polish) come next.
+Still to come: the conversational interviewer for **Your life**, and the research agent that fetches facts for **A topic** from Wikipedia and Wikidata.
 
 ## Architecture
 
@@ -59,7 +68,10 @@ There is no other network destination. No analytics, no trackers, no telemetry.
 | `src/lib/llm/provider.ts` | The one place a provider is chosen — Anthropic, OpenAI, or the offline mock. |
 | `src/lib/reader/tokenize.ts` | Turning a story into tappable words with the character offsets read-aloud needs. |
 | `src/lib/reader/tts.svelte.ts` | Read-aloud, one paragraph per utterance, with karaoke highlighting. |
-| `src/lib/db/` | IndexedDB: stories, vocabulary, tracks, caches, export/import. |
+| `src/lib/agents/author.ts` | Plans a book from any source, then writes its stories one at a time. |
+| `src/lib/files/extract.ts` | Reading PDF, Word, and text files inside the browser. |
+| `src/lib/content/levelCheck.ts` | The placement passages and the rule that reads them. |
+| `src/lib/db/` | IndexedDB: sources, books, stories, vocabulary, caches, export/import. |
 | `src/lib/content/sampleStory.ts` | The bundled level-3 story, so the app works before you have a key. |
 
 ## Running it
