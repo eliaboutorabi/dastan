@@ -44,11 +44,16 @@
 					<h2>{t(shelfTitle(shelf))}</h2>
 					<p>{t(shelfBlurb(shelf))}</p>
 				</div>
-				<a class="btn btn-sm" href="{base}/new/?kind={NEW_FOR_SHELF[shelf]}" aria-label={t('shelf.new')}>
+				<a
+					class="btn btn-sm add"
+					href="{base}/new/?kind={NEW_FOR_SHELF[shelf]}"
+					aria-label={t('shelf.new')}
+					title={t('shelf.new')}
+				>
 					<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
 						><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor" /></svg
 					>
-					{t('shelf.new')}
+					<span class="add-label">{t('shelf.new')}</span>
 				</a>
 			</div>
 
@@ -150,6 +155,31 @@
 		align-items: flex-start;
 		justify-content: space-between;
 		gap: var(--s4);
+	}
+
+	/* On a phone this is a round + beside the shelf name; there is no room for
+	   a three-word label, and wrapping it to three lines looked broken. */
+	.add {
+		flex: none;
+		width: 34px;
+		padding: 0;
+		border-radius: 50%;
+	}
+
+	.add-label {
+		display: none;
+	}
+
+	@media (min-width: 620px) {
+		.add {
+			width: auto;
+			padding: 0 var(--s3);
+			border-radius: var(--radius);
+		}
+
+		.add-label {
+			display: inline;
+		}
 	}
 
 	.shelf-head h2 {
