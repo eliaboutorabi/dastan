@@ -420,6 +420,9 @@
 	@media (min-width: 900px) {
 		article {
 			padding-top: var(--s6);
+			/* Clear the floating control panel so the last lines of a story are
+			   never parked underneath it. */
+			padding-bottom: 140px;
 		}
 	}
 
