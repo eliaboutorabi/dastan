@@ -196,7 +196,7 @@
 							class="pilcrow"
 							aria-label={t('reader.translateSentence')}
 							onclick={() => onSentenceTap(sentence)}>¶</button
-						></span
+						><span class="gap">{sentence.trailing}</span></span
 						>{#if openSentence === sentence.text}<span class="sentence-translation" dir={nativeDir}
 							>{#if sentenceError}<span class="error">{sentenceError}</span>{:else if sentenceText}{sentenceText}{:else}{t(
 									'common.loading'
@@ -252,7 +252,7 @@
 			</div>
 		</article>
 
-		<div class="bar" dir={nativeDir}>
+		<div class="bar" dir="ltr">
 			{#if ttsSupported}
 				<button
 					class="play"

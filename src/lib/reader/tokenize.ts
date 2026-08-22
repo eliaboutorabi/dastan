@@ -23,7 +23,10 @@ export interface Sentence {
 	text: string;
 	start: number;
 	end: number;
+	/** Words and punctuation, with the trailing whitespace kept out. */
 	tokens: Token[];
+	/** The whitespace that followed the sentence, rendered after the ¶ mark. */
+	trailing: string;
 }
 
 export interface Paragraph {
@@ -119,12 +122,12 @@ function splitSentences(text: string, offset: number, boldRanges: [number, numbe
 		// Keep the trailing space with the sentence so offsets stay contiguous.
 		let after = end;
 		while (after < text.length && /\s/.test(text[after])) after++;
-		const raw = text.slice(start, after);
 		sentences.push({
-			text: raw.trim(),
+			text: text.slice(start, end).trim(),
 			start: offset + start,
 			end: offset + end,
-			tokens: tokenize(raw, offset + start, boldRanges)
+			tokens: tokenize(text.slice(start, end), offset + start, boldRanges),
+			trailing: text.slice(end, after)
 		});
 		start = after;
 		i = after - 1;
@@ -136,7 +139,8 @@ function splitSentences(text: string, offset: number, boldRanges: [number, numbe
 				text: raw.trim(),
 				start: offset + start,
 				end: offset + text.length,
-				tokens: tokenize(raw, offset + start, boldRanges)
+				tokens: tokenize(raw, offset + start, boldRanges),
+				trailing: ''
 			});
 		}
 	}
@@ -144,7 +148,13 @@ function splitSentences(text: string, offset: number, boldRanges: [number, numbe
 }
 
 export function parseStory(body: string): ParsedStory {
-	const { plain, boldRanges } = unbold(body.replace(/\r\n/g, '\n'));
+	const { plain: raw, boldRanges } = unbold(body.replace(/\r\n/g, '\n'));
+	// Single newlines become spaces; blank lines still separate paragraphs.
+	// Both are one character, so no offset moves and the bold ranges hold.
+	const plain = raw
+		.split(/(\n{2,})/)
+		.map((part, index) => (index % 2 === 0 ? part.replace(/\n/g, ' ') : part))
+		.join('');
 	const paragraphs: Paragraph[] = [];
 
 	let cursor = 0;
