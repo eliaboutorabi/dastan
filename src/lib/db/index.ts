@@ -39,6 +39,18 @@ function db() {
 	return dbPromise;
 }
 
+/**
+ * IndexedDB stores values by structured-clone, and Svelte's reactive state is
+ * a Proxy — handing one straight to `put` fails with "could not be cloned",
+ * which is exactly what happened the first time a word was tapped on the
+ * deployed site. Everything stored here is plain JSON, so a round trip is both
+ * a faithful copy and a proxy stripper. Doing it at this layer means no caller
+ * has to remember.
+ */
+function plain<T>(value: T): T {
+	return JSON.parse(JSON.stringify(value)) as T;
+}
+
 /* --- profile & corpus ---------------------------------------------------- */
 
 export async function getProfile(): Promise<LearnerProfile | undefined> {
@@ -46,7 +58,7 @@ export async function getProfile(): Promise<LearnerProfile | undefined> {
 }
 
 export async function putProfile(profile: LearnerProfile): Promise<void> {
-	await (await db()).put('meta', profile, 'profile');
+	await (await db()).put('meta', plain(profile), 'profile');
 }
 
 export async function getCorpus(): Promise<LifeCorpus | undefined> {
@@ -54,7 +66,7 @@ export async function getCorpus(): Promise<LifeCorpus | undefined> {
 }
 
 export async function putCorpus(corpus: LifeCorpus): Promise<void> {
-	await (await db()).put('meta', corpus, 'corpus');
+	await (await db()).put('meta', plain(corpus), 'corpus');
 }
 
 /* --- stories ------------------------------------------------------------- */
@@ -69,12 +81,12 @@ export async function getStory(id: string): Promise<Story | undefined> {
 }
 
 export async function putStory(story: Story): Promise<void> {
-	await (await db()).put('stories', story);
+	await (await db()).put('stories', plain(story));
 }
 
 export async function putStories(stories: Story[]): Promise<void> {
 	const tx = (await db()).transaction('stories', 'readwrite');
-	await Promise.all([...stories.map((s) => tx.store.put(s)), tx.done]);
+	await Promise.all([...stories.map((s) => tx.store.put(plain(s))), tx.done]);
 }
 
 /* --- vocabulary ---------------------------------------------------------- */
@@ -89,7 +101,7 @@ export async function getVocab(word: string): Promise<VocabEntry | undefined> {
 }
 
 export async function putVocab(entry: VocabEntry): Promise<void> {
-	await (await db()).put('vocab', { ...entry, word: entry.word.toLowerCase() });
+	await (await db()).put('vocab', plain({ ...entry, word: entry.word.toLowerCase() }));
 }
 
 /**
@@ -127,7 +139,7 @@ export async function allTracks(): Promise<Track[]> {
 }
 
 export async function putTrack(track: Track): Promise<void> {
-	await (await db()).put('tracks', track);
+	await (await db()).put('tracks', plain(track));
 }
 
 /* --- translation caches -------------------------------------------------- */
@@ -142,7 +154,7 @@ export async function getCachedSense(key: string): Promise<TranslationCacheEntry
 }
 
 export async function putCachedSense(entry: TranslationCacheEntry): Promise<void> {
-	await (await db()).put('wordSenses', entry);
+	await (await db()).put('wordSenses', plain(entry));
 }
 
 export async function getCachedSentence(key: string): Promise<SentenceCacheEntry | undefined> {
@@ -150,7 +162,7 @@ export async function getCachedSentence(key: string): Promise<SentenceCacheEntry
 }
 
 export async function putCachedSentence(entry: SentenceCacheEntry): Promise<void> {
-	await (await db()).put('sentences', entry);
+	await (await db()).put('sentences', plain(entry));
 }
 
 /* --- export / import / erase --------------------------------------------- */
@@ -191,9 +203,9 @@ export async function importAll(backup: DastanBackup): Promise<number> {
 	]);
 	if (backup.profile) await tx.objectStore('meta').put(backup.profile, 'profile');
 	if (backup.corpus) await tx.objectStore('meta').put(backup.corpus, 'corpus');
-	for (const story of backup.stories ?? []) await tx.objectStore('stories').put(story);
-	for (const word of backup.vocab ?? []) await tx.objectStore('vocab').put(word);
-	for (const track of backup.tracks ?? []) await tx.objectStore('tracks').put(track);
+	for (const story of backup.stories ?? []) await tx.objectStore('stories').put(plain(story));
+	for (const word of backup.vocab ?? []) await tx.objectStore('vocab').put(plain(word));
+	for (const track of backup.tracks ?? []) await tx.objectStore('tracks').put(plain(track));
 	await tx.done;
 	return backup.stories?.length ?? 0;
 }

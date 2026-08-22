@@ -99,6 +99,8 @@
 				await library.save(updated);
 			}
 		} catch (error) {
+			// The meaning, if we already got one, still shows — only a lookup
+			// that produced nothing is worth interrupting the reading for.
 			senseError = friendlyError(error);
 		} finally {
 			senseLoading = false;

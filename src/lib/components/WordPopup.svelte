@@ -84,8 +84,6 @@
 	<div class="body" dir={nativeDir} lang={settings.current.nativeLanguage}>
 		{#if loading}
 			<p class="muted">{t('reader.thinking')}</p>
-		{:else if error}
-			<p class="error">{error}</p>
 		{:else if sense}
 			<p class="meaning">{sense.meaning}</p>
 			{#if sense.partOfSpeech}
@@ -94,6 +92,8 @@
 			{#if sense.note}
 				<p class="note">{sense.note}</p>
 			{/if}
+		{:else if error}
+			<p class="error">{error}</p>
 		{/if}
 	</div>
 
