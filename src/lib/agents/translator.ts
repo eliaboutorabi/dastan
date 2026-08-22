@@ -46,31 +46,47 @@ export async function lookupWord(word: string, sentence: string): Promise<WordSe
 
 	const cached = await getCachedSense(key);
 	if (cached) {
-		return { meaning: cached.meaning, partOfSpeech: cached.partOfSpeech, note: cached.note };
+		return {
+			simple: cached.simple ?? '',
+			native: cached.meaning,
+			partOfSpeech: cached.partOfSpeech,
+			note: cached.note
+		};
 	}
 
-	const model = createChatModel({ temperature: 0, maxTokens: 300 });
+	const model = createChatModel({ temperature: 0, maxTokens: 400 });
 	const response = await model.invoke([
-		['system', wordSenseSystemPrompt(languageName(native))],
+		[
+			'system',
+			wordSenseSystemPrompt({
+				nativeLanguageName: languageName(native),
+				targetLanguageName: languageName(settings.current.targetLanguage)
+			})
+		],
 		['human', wordSenseUserPrompt(word, sentence)]
 	]);
 
 	const raw = messageText(response.content);
 	const parsed = parseJsonObject<WordSense>(raw);
-	const sense: WordSense = parsed?.meaning
-		? {
-				meaning: parsed.meaning,
-				partOfSpeech: parsed.partOfSpeech ?? '',
-				note: parsed.note?.trim() || undefined
-			}
-		: { meaning: raw.trim(), partOfSpeech: '' };
+	// A reply that parses into neither field still has to show the learner
+	// something, so the raw text becomes the native meaning rather than nothing.
+	const sense: WordSense =
+		parsed?.native || parsed?.simple
+			? {
+					simple: parsed.simple?.trim() ?? '',
+					native: parsed.native?.trim() ?? '',
+					partOfSpeech: parsed.partOfSpeech ?? '',
+					note: parsed.note?.trim() || undefined
+				}
+			: { simple: '', native: raw.trim(), partOfSpeech: '' };
 
 	await putCachedSense({
 		key,
 		word: word.toLowerCase(),
 		sentence,
 		nativeLanguage: native,
-		meaning: sense.meaning,
+		simple: sense.simple,
+		meaning: sense.native,
 		partOfSpeech: sense.partOfSpeech,
 		note: sense.note,
 		createdAt: new Date().toISOString()

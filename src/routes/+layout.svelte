@@ -3,15 +3,12 @@
 	import { page } from '$app/state';
 	import { base } from '$app/paths';
 	import { settings } from '$lib/settings/store.svelte';
-	import { dirOf, translate, type StringKey } from '$lib/i18n';
+	import type { StringKey } from '$lib/i18n';
+	import { nativeDir, t, uiDir } from '$lib/i18n/ui.svelte';
 	import { library } from '$lib/stores/library.svelte';
 
 	let { children } = $props();
 
-	const nativeDir = $derived(dirOf(settings.current.nativeLanguage));
-	const t = $derived((key: StringKey, vars?: Record<string, string | number>) =>
-		translate(settings.current.nativeLanguage, key, vars)
-	);
 
 	// The reader is a full-bleed page with its own chrome; the shelf, the words
 	// list and settings share the tab bar.
@@ -20,9 +17,9 @@
 	$effect(() => {
 		const root = document.documentElement;
 		root.dataset.theme = settings.current.theme;
-		root.dataset.nativeRtl = String(nativeDir === 'rtl');
-		root.lang = settings.current.nativeLanguage;
-		root.dir = nativeDir;
+		root.dataset.nativeRtl = String(nativeDir() === 'rtl');
+		root.lang = settings.current.uiLanguage;
+		root.dir = uiDir();
 		root.style.setProperty('--read-size', `${settings.current.textSize}px`);
 	});
 

@@ -3,12 +3,10 @@
 	import Spine from '$lib/components/Spine.svelte';
 	import { library, SHELVES } from '$lib/stores/library.svelte';
 	import { settings } from '$lib/settings/store.svelte';
-	import { translate, type StringKey } from '$lib/i18n';
+	import type { StringKey } from '$lib/i18n';
+	import { t } from '$lib/i18n/ui.svelte';
 	import type { Shelf } from '$lib/types';
 
-	const t = $derived((key: StringKey, vars?: Record<string, string | number>) =>
-		translate(settings.current.nativeLanguage, key, vars)
-	);
 
 	const shelfBlurb = (shelf: Shelf) => `shelf.${shelf}.blurb` as StringKey;
 	const shelfTitle = (shelf: Shelf) => `shelf.${shelf}` as StringKey;

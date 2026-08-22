@@ -6,6 +6,17 @@ export type { StringKey };
 /** Every UI language the chrome can speak. */
 export const catalogues: Record<string, Record<string, string>> = { en, fa };
 
+/**
+ * The languages the interface itself has been written in. Offering a language
+ * here that has no string table would show the learner raw keys, so this list
+ * is deliberately shorter than the one below and grows only when a translation
+ * actually exists.
+ */
+export const uiLanguageOptions = [
+	{ code: 'en', label: 'English' },
+	{ code: 'fa', label: 'فارسی' }
+];
+
 /** Languages the learner can pick from in Settings. */
 export const languageOptions = [
 	{ code: 'fa', label: 'فارسی', english: 'Farsi' },

@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { allVocab } from '$lib/db';
-	import { dirOf, translate, type StringKey } from '$lib/i18n';
+	import type { StringKey } from '$lib/i18n';
+	import { nativeDir, t, uiDir } from '$lib/i18n/ui.svelte';
 	import { Speaker } from '$lib/reader/tts.svelte';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { VocabEntry } from '$lib/types';
 
-	const t = $derived((key: StringKey, vars?: Record<string, string | number>) =>
-		translate(settings.current.nativeLanguage, key, vars)
-	);
-	const nativeDir = $derived(dirOf(settings.current.nativeLanguage));
 
 	let words = $state<VocabEntry[]>([]);
 
@@ -63,9 +60,16 @@
 									</svg>
 								</button>
 							</div>
-							<p class="meaning" dir={nativeDir}>{entry.meaningNative}</p>
+							{#if entry.meaningSimple}
+								<p class="meaning simple" lang={settings.current.targetLanguage}>
+									{entry.meaningSimple}
+								</p>
+							{/if}
+							<p class="meaning native" dir={nativeDir()} lang={settings.current.nativeLanguage}>
+								{entry.meaningNative}
+							</p>
 							<p class="context" dir="ltr" lang={settings.current.targetLanguage}>
-								<span class="context-label" dir={nativeDir}>{t('words.firstSeen')}</span>
+								<span class="context-label" dir={uiDir()}>{t('words.firstSeen')}</span>
 								{entry.firstContext}
 							</p>
 						</li>
@@ -149,6 +153,15 @@
 		font-size: 0.98rem;
 	}
 
+	.meaning.simple {
+		font-family: var(--font-read);
+		color: var(--ink);
+	}
+
+	.meaning.native {
+		color: var(--ink-soft);
+	}
+
 	.context {
 		margin: 0.35rem 0 0;
 		font-family: var(--font-read);
@@ -159,7 +172,6 @@
 
 	.context-label {
 		display: block;
-		font-family: var(--font-rtl);
 		font-size: 0.75rem;
 		color: var(--ink-faint);
 	}

@@ -5,7 +5,8 @@
 	import WordPopup from '$lib/components/WordPopup.svelte';
 	import { lookupWord, translateSentence } from '$lib/agents/translator';
 	import { getStory, recordWordTap } from '$lib/db';
-	import { dirOf, translate, type StringKey } from '$lib/i18n';
+	import type { StringKey } from '$lib/i18n';
+	import { nativeDir, t, targetDir, uiDir } from '$lib/i18n/ui.svelte';
 	import { MissingKeyError } from '$lib/llm/provider';
 	import { parseStory, type Sentence, type Token } from '$lib/reader/tokenize';
 	import { Speaker } from '$lib/reader/tts.svelte';
@@ -14,11 +15,6 @@
 	import { recalibrate } from '$lib/agents/ladder';
 	import type { Story, WordSense } from '$lib/types';
 
-	const t = $derived((key: StringKey, vars?: Record<string, string | number>) =>
-		translate(settings.current.nativeLanguage, key, vars)
-	);
-	const nativeDir = $derived(dirOf(settings.current.nativeLanguage));
-	const targetDir = $derived(dirOf(settings.current.targetLanguage));
 
 	let story = $state<Story | null>(null);
 	let notFound = $state(false);
@@ -91,7 +87,8 @@
 			await recordWordTap({
 				word: token.text,
 				sentence: sentence.text,
-				meaningNative: result.meaning
+				meaningNative: result.native,
+				meaningSimple: result.simple
 			});
 			if (story) {
 				const updated = { ...story, tapCount: story.tapCount + 1 };
@@ -166,8 +163,8 @@
 	const themes: ThemeId[] = ['paper', 'sepia', 'night'];
 </script>
 
-<div class="reader" dir={targetDir}>
-	<header dir={nativeDir}>
+<div class="reader" dir={targetDir()}>
+	<header dir={uiDir()}>
 		<a class="back" href="{base}/" aria-label={t('nav.back')}>
 			<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
 				<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" />
@@ -180,9 +177,11 @@
 		<p class="missing">{t('reader.notFound')}</p>
 	{:else if story && parsed}
 		<article>
-			<h1 dir={targetDir}>{story.title}</h1>
-			<p class="native-title" dir={nativeDir}>{story.titleNative}</p>
-			<p class="hint" dir={nativeDir}>{t('reader.tapHint')} {t('reader.sentenceHint')}</p>
+			<h1 dir={targetDir()}>{story.title}</h1>
+			<p class="native-title" dir={nativeDir()} lang={settings.current.nativeLanguage}>
+				{story.titleNative}
+			</p>
+			<p class="hint" dir={uiDir()}>{t('reader.tapHint')} {t('reader.sentenceHint')}</p>
 
 			{#each parsed.paragraphs as paragraph (paragraph.start)}
 				<p class="para">
@@ -199,7 +198,7 @@
 							aria-label={t('reader.translateSentence')}
 							onclick={() => onSentenceTap(sentence)}>¶</button
 						><span class="gap">{sentence.trailing}</span></span
-						>{#if openSentence === sentence.text}<span class="sentence-translation" dir={nativeDir}
+						>{#if openSentence === sentence.text}<span class="sentence-translation" dir={nativeDir()} lang={settings.current.nativeLanguage}
 							>{#if sentenceError}<span class="error">{sentenceError}</span>{:else if sentenceText}{sentenceText}{:else}{t(
 									'common.loading'
 								)}{/if}</span
@@ -208,13 +207,13 @@
 			{/each}
 
 			{#if Object.keys(story.glossary).length}
-				<section class="glossary" dir={nativeDir}>
+				<section class="glossary" dir={uiDir()}>
 					<h2>{t('reader.glossary')}</h2>
 					<dl>
 						{#each Object.entries(story.glossary) as [word, meaning] (word)}
 							<div>
-								<dt dir={targetDir} lang={settings.current.targetLanguage}>{word}</dt>
-								<dd>{meaning}</dd>
+								<dt dir={targetDir()} lang={settings.current.targetLanguage}>{word}</dt>
+								<dd dir={nativeDir()} lang={settings.current.nativeLanguage}>{meaning}</dd>
 							</div>
 						{/each}
 					</dl>
@@ -222,7 +221,7 @@
 			{/if}
 
 			{#if story.sources?.length}
-				<section class="sources" dir={nativeDir}>
+				<section class="sources" dir={uiDir()}>
 					<h2>{t('reader.sources')}</h2>
 					<p>{t('reader.sources.note')}</p>
 					<ul>
@@ -235,7 +234,7 @@
 				</section>
 			{/if}
 
-			<div class="finish" dir={nativeDir}>
+			<div class="finish" dir={uiDir()}>
 				{#if finished}
 					<div class="celebration">
 						<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
@@ -365,7 +364,6 @@
 	.native-title {
 		margin: 0.25rem 0 0;
 		color: var(--ink-soft);
-		font-family: var(--font-rtl);
 		font-size: 1rem;
 	}
 
@@ -375,7 +373,6 @@
 		background: var(--lapis-wash);
 		border-radius: var(--radius);
 		color: var(--ink-soft);
-		font-family: var(--font-rtl);
 		font-size: 0.85rem;
 		line-height: 1.6;
 	}
@@ -443,7 +440,6 @@
 		background: var(--paper-sunken);
 		border-inline-start: 3px solid var(--lapis);
 		border-radius: 0 var(--radius) var(--radius) 0;
-		font-family: var(--font-rtl);
 		font-size: 0.95rem;
 		line-height: 1.7;
 	}
@@ -457,7 +453,6 @@
 		margin-top: 2.5rem;
 		padding-top: 1.25rem;
 		border-top: 1px solid var(--rule);
-		font-family: var(--font-rtl);
 	}
 
 	.glossary h2,
@@ -510,7 +505,6 @@
 	.finish {
 		margin-top: 2.5rem;
 		text-align: center;
-		font-family: var(--font-rtl);
 	}
 
 	.celebration {

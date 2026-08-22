@@ -82,6 +82,11 @@ export const en = {
 	'settings.harnessTest.hint':
 		'Runs a small agent with a virtual file system in this browser — the same machinery that will write your book.',
 	'settings.harnessTest.ok': 'The harness ran in your browser and answered: {msg}',
+	'settings.appLanguage': 'App language',
+	'settings.appLanguage.hint': 'What the buttons and labels around the story are written in.',
+	'settings.nativeLanguage.hint': 'The language a word is explained in when you tap it, and the language the interviewer will talk to you in.',
+	'reader.meaning.simple': 'In simple words',
+	'reader.meaning.native': 'In your language',
 	'settings.languages': 'Languages',
 	'settings.nativeLanguage': 'My language',
 	'settings.targetLanguage': 'I am learning',

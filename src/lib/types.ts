@@ -52,8 +52,10 @@ export interface VocabEntry {
 	word: string;
 	/** The sentence it was first tapped in. */
 	firstContext: string;
-	/** Contextual translation captured at the first tap. */
+	/** Contextual translation captured at the first tap, in the native language. */
 	meaningNative: string;
+	/** The same meaning in plain target-language words. */
+	meaningSimple: string;
 	/** Times the learner asked for it. */
 	taps: number;
 	/** Times it has appeared in stories since. */
@@ -79,6 +81,9 @@ export interface TranslationCacheEntry {
 	word: string;
 	sentence: string;
 	nativeLanguage: string;
+	/** A short explanation in the target language, in very common words. */
+	simple: string;
+	/** The same meaning in the learner's own language. */
 	meaning: string;
 	partOfSpeech: string;
 	/** One short line, only when the word is used in a non-obvious sense. */
@@ -97,7 +102,11 @@ export interface SentenceCacheEntry {
 
 /** The shape the contextual-translation prompt must return. */
 export interface WordSense {
-	meaning: string;
+	/** A short explanation in the target language, in very common words. */
+	simple: string;
+	/** The same meaning in the language the learner thinks in. */
+	native: string;
 	partOfSpeech: string;
+	/** One short line, only when the word is used in a non-obvious sense. */
 	note?: string;
 }

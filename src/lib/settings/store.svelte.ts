@@ -8,6 +8,13 @@ export interface Settings {
 	/** The learner's own key. Never leaves this browser except to the provider. */
 	apiKey: string;
 	model: string;
+	/**
+	 * What the interface itself speaks. Separate from `nativeLanguage` on
+	 * purpose: a learner can want the app in English while still needing a word
+	 * explained in Farsi. Conflating the two forced a choice nobody wanted.
+	 */
+	uiLanguage: string;
+	/** The language the learner thinks in — used for meanings and the interview. */
 	nativeLanguage: string;
 	targetLanguage: string;
 	theme: ThemeId;
@@ -29,6 +36,7 @@ const DEFAULTS: Settings = {
 	provider: 'anthropic',
 	apiKey: '',
 	model: DEFAULT_MODELS.anthropic,
+	uiLanguage: 'en',
 	nativeLanguage: 'fa',
 	targetLanguage: 'en',
 	theme: 'paper',

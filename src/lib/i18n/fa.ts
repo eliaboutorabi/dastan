@@ -84,6 +84,11 @@ export const fa: Record<StringKey, string> = {
 	'settings.harnessTest.hint':
 		'یک عامل کوچک با فایل‌سیستم مجازی را در همین مرورگر اجرا می‌کند — همان چیزی که بعداً کتاب تو را می‌نویسد.',
 	'settings.harnessTest.ok': 'موتور در مرورگر تو اجرا شد و جواب داد: {msg}',
+	'settings.appLanguage': 'زبان برنامه',
+	'settings.appLanguage.hint': 'زبان دکمه‌ها و برچسب‌های دور داستان.',
+	'settings.nativeLanguage.hint': 'زبانی که معنی واژه با آن نشان داده می‌شود، و زبانی که مصاحبه‌گر با تو حرف می‌زند.',
+	'reader.meaning.simple': 'به زبان ساده',
+	'reader.meaning.native': 'به زبان خودت',
 	'settings.languages': 'زبان‌ها',
 	'settings.nativeLanguage': 'زبان من',
 	'settings.targetLanguage': 'دارم یاد می‌گیرم',

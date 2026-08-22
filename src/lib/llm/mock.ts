@@ -47,7 +47,8 @@ export class MockChatModel extends BaseChatModel {
 			const known = DEMO_SENSES[word];
 			return JSON.stringify(
 				known ?? {
-					meaning: `«${word}» — ${OFFLINE_NOTICE}`,
+					simple: 'The offline demo does not know this word.',
+					native: `«${word}» — ${OFFLINE_NOTICE}`,
 					partOfSpeech: '—',
 					note: OFFLINE_NOTICE
 				}
@@ -81,26 +82,51 @@ const OFFLINE_HARNESS_NOTE =
  * teaches, so the offline demo shows the real behaviour — a meaning that fits
  * *this* sentence — rather than a placeholder.
  */
-const DEMO_SENSES: Record<string, { meaning: string; partOfSpeech: string; note?: string }> = {
+const DEMO_SENSES: Record<
+	string,
+	{ simple: string; native: string; partOfSpeech: string; note?: string }
+> = {
 	ledger: {
-		meaning: 'دفتر حساب — دفتری که همهٔ پول‌های آمده و رفته در آن نوشته می‌شود',
-		partOfSpeech: 'اسم'
+		simple: 'a book where you write every dollar that comes in and goes out',
+		native: 'دفتر حساب — دفتری که همهٔ پول‌های آمده و رفته در آن نوشته می‌شود',
+		partOfSpeech: 'noun'
 	},
-	invoice: { meaning: 'فاکتور، صورت‌حساب', partOfSpeech: 'اسم' },
+	invoice: {
+		simple: 'a paper that says how much you must pay',
+		native: 'فاکتور، صورت‌حساب',
+		partOfSpeech: 'noun'
+	},
 	balance: {
-		meaning: 'مانده — پولی که بعد از همهٔ حساب‌ها باقی می‌ماند',
-		partOfSpeech: 'اسم',
+		simple: 'the money that is left after you count everything',
+		native: 'مانده — پولی که بعد از همهٔ حساب‌ها باقی می‌ماند',
+		partOfSpeech: 'noun',
 		note: 'اینجا به معنی «تعادل» نیست؛ به معنی ماندهٔ حساب است.'
 	},
-	receipt: { meaning: 'رسید', partOfSpeech: 'اسم' },
-	owe: { meaning: 'بدهکار بودن', partOfSpeech: 'فعل' },
-	flour: { meaning: 'آرد', partOfSpeech: 'اسم' },
-	bakery: { meaning: 'نانوایی', partOfSpeech: 'اسم' },
-	counted: { meaning: 'شمردم (از فعل count: شمردن)', partOfSpeech: 'فعل' },
-	missing: { meaning: 'گم‌شده، کم', partOfSpeech: 'صفت' },
-	pocket: { meaning: 'جیب', partOfSpeech: 'اسم' },
-	forgot: { meaning: 'فراموش کردم (از فعل forget)', partOfSpeech: 'فعل' },
-	quiet: { meaning: 'ساکت، آرام', partOfSpeech: 'صفت' }
+	receipt: {
+		simple: 'a small paper that shows you paid',
+		native: 'رسید',
+		partOfSpeech: 'noun'
+	},
+	owe: { simple: 'to still have to pay someone', native: 'بدهکار بودن', partOfSpeech: 'verb' },
+	flour: { simple: 'the white powder you make bread from', native: 'آرد', partOfSpeech: 'noun' },
+	bakery: { simple: 'a shop that makes and sells bread', native: 'نانوایی', partOfSpeech: 'noun' },
+	counted: {
+		simple: 'said the numbers one by one to find how many',
+		native: 'شمردم (از فعل count: شمردن)',
+		partOfSpeech: 'verb'
+	},
+	missing: { simple: 'not there; gone', native: 'گم‌شده، کم', partOfSpeech: 'adjective' },
+	pocket: {
+		simple: 'the small bag inside your coat where you keep things',
+		native: 'جیب',
+		partOfSpeech: 'noun'
+	},
+	forgot: {
+		simple: 'did not remember',
+		native: 'فراموش کردم (از فعل forget)',
+		partOfSpeech: 'verb'
+	},
+	quiet: { simple: 'with little or no noise', native: 'ساکت، آرام', partOfSpeech: 'adjective' }
 };
 
 const DEMO_SENTENCES: Record<string, string> = {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { settings } from '$lib/settings/store.svelte';
-	import { dirOf, translate, type StringKey } from '$lib/i18n';
+	import { nativeDir, t, targetDir } from '$lib/i18n/ui.svelte';
 	import { Speaker } from '$lib/reader/tts.svelte';
 	import type { WordSense } from '$lib/types';
 
@@ -16,10 +16,6 @@
 
 	let { word, sense, loading, error, anchor, onclose }: Props = $props();
 
-	const t = $derived((key: StringKey, vars?: Record<string, string | number>) =>
-		translate(settings.current.nativeLanguage, key, vars)
-	);
-	const nativeDir = $derived(dirOf(settings.current.nativeLanguage));
 
 	let card = $state<HTMLDivElement | null>(null);
 	let placement = $state<{ left: number; top: number } | null>(null);
@@ -81,16 +77,31 @@
 		</button>
 	</div>
 
-	<div class="body" dir={nativeDir} lang={settings.current.nativeLanguage}>
+	<div class="body">
 		{#if loading}
 			<p class="muted">{t('reader.thinking')}</p>
 		{:else if sense}
-			<p class="meaning">{sense.meaning}</p>
+			<!-- The plain-language meaning comes first: it is the one that
+			     teaches, because it keeps the learner inside the language they
+			     are learning. The native meaning sits underneath as the safety
+			     net, so a hard word never becomes a stuck moment. -->
+			{#if sense.simple}
+				<p class="label">{t('reader.meaning.simple')}</p>
+				<p class="meaning simple" dir={targetDir()} lang={settings.current.targetLanguage}>
+					{sense.simple}
+				</p>
+			{/if}
+			{#if sense.native}
+				<p class="label">{t('reader.meaning.native')}</p>
+				<p class="meaning native" dir={nativeDir()} lang={settings.current.nativeLanguage}>
+					{sense.native}
+				</p>
+			{/if}
 			{#if sense.partOfSpeech}
-				<p class="pos">{sense.partOfSpeech}</p>
+				<p class="pos" dir={targetDir()}>{sense.partOfSpeech}</p>
 			{/if}
 			{#if sense.note}
-				<p class="note">{sense.note}</p>
+				<p class="note" dir={nativeDir()} lang={settings.current.nativeLanguage}>{sense.note}</p>
 			{/if}
 		{:else if error}
 			<p class="error">{error}</p>
@@ -168,9 +179,26 @@
 		margin: 0 0 0.35rem;
 	}
 
+	.label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--ink-faint);
+		margin: 0.55rem 0 0.1rem !important;
+	}
+
+	.label:first-child {
+		margin-top: 0 !important;
+	}
+
 	.meaning {
-		font-size: 1.05rem;
+		font-size: 1.02rem;
 		line-height: 1.6;
+	}
+
+	.meaning.simple {
+		font-family: var(--font-read);
 	}
 
 	.pos {

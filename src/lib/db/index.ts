@@ -113,6 +113,7 @@ export async function recordWordTap(args: {
 	word: string;
 	sentence: string;
 	meaningNative: string;
+	meaningSimple: string;
 }): Promise<VocabEntry> {
 	const word = args.word.toLowerCase();
 	const now = new Date().toISOString();
@@ -123,6 +124,7 @@ export async function recordWordTap(args: {
 				word,
 				firstContext: args.sentence,
 				meaningNative: args.meaningNative,
+				meaningSimple: args.meaningSimple,
 				taps: 1,
 				exposures: 1,
 				status: 'new',
@@ -146,7 +148,9 @@ export async function putTrack(track: Track): Promise<void> {
 
 /** Cache key for a contextual word sense: the word *and* the sentence it sits in. */
 export function senseKey(word: string, sentence: string, native: string): string {
-	return `${native}::${word.toLowerCase()}::${sentence.trim()}`;
+	// The `v2` is the prompt contract version. Bumping it retires cache entries
+	// written under an older contract instead of serving half-filled ones.
+	return `v2::${native}::${word.toLowerCase()}::${sentence.trim()}`;
 }
 
 export async function getCachedSense(key: string): Promise<TranslationCacheEntry | undefined> {

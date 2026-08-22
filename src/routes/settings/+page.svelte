@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { eraseAll, exportAll, importAll, type DastanBackup } from '$lib/db';
-	import { dirOf, languageOptions, translate, type StringKey } from '$lib/i18n';
+	import { languageOptions, uiLanguageOptions, type StringKey } from '$lib/i18n';
+	import { t, uiDir } from '$lib/i18n/ui.svelte';
 	import { runHarnessSelfTest } from '$lib/agents/harness';
 	import { testConnection } from '$lib/llm/provider';
 	import { Speaker } from '$lib/reader/tts.svelte';
 	import { settings, type ProviderId, type ThemeId } from '$lib/settings/store.svelte';
 	import { library } from '$lib/stores/library.svelte';
 
-	const t = $derived((key: StringKey, vars?: Record<string, string | number>) =>
-		translate(settings.current.nativeLanguage, key, vars)
-	);
-	const nativeDir = $derived(dirOf(settings.current.nativeLanguage));
 
 	type Outcome = { kind: 'ok' | 'fail'; message: string } | null;
 
@@ -106,7 +103,7 @@
 	}
 </script>
 
-<div class="wrap" dir={nativeDir}>
+<div class="wrap" dir={uiDir()}>
 	<header class="masthead">
 		<h1>{t('settings.title')}</h1>
 	</header>
@@ -178,6 +175,20 @@
 
 	<section class="card">
 		<h2>{t('settings.languages')}</h2>
+
+		<label class="field">
+			<span class="field-label">{t('settings.appLanguage')}</span>
+			<select
+				value={settings.current.uiLanguage}
+				onchange={(event) => settings.set('uiLanguage', event.currentTarget.value)}
+			>
+				{#each uiLanguageOptions as option (option.code)}
+					<option value={option.code}>{option.label}</option>
+				{/each}
+			</select>
+			<span class="field-hint">{t('settings.appLanguage.hint')}</span>
+		</label>
+
 		<div class="pair">
 			<label class="field">
 				<span class="field-label">{t('settings.nativeLanguage')}</span>
@@ -203,6 +214,7 @@
 				</select>
 			</label>
 		</div>
+		<p class="field-hint">{t('settings.nativeLanguage.hint')}</p>
 	</section>
 
 	<section class="card">

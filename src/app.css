@@ -93,9 +93,13 @@ body {
 	-webkit-tap-highlight-color: transparent;
 }
 
-/* Farsi and every other RTL script gets Vazirmatn, wherever it appears. */
-[dir='rtl'],
-:root[data-native-rtl='true'] body {
+/*
+ * Vazirmatn follows the script, not the app. Any element marked `dir="rtl"`
+ * gets it — a Farsi meaning inside an English popup, a Farsi title under an
+ * English one — while the interface around it keeps the UI font. Before this,
+ * choosing Farsi as your language restyled the entire app.
+ */
+[dir='rtl'] {
 	font-family: var(--font-rtl);
 }
 
