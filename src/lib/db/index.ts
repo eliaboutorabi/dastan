@@ -147,6 +147,57 @@ export async function recordWordTap(args: {
 	return entry;
 }
 
+/**
+ * Keep a word without looking it up.
+ *
+ * Tapping a word asks "what does this mean"; this asks "I want to study this",
+ * which is a different intention and should not cost an API call. An entry
+ * saved this way has no meaning yet — the Words list offers to fetch one.
+ */
+export async function saveWordManually(args: {
+	word: string;
+	sentence?: string;
+}): Promise<VocabEntry> {
+	const word = args.word.toLowerCase().trim();
+	const now = new Date().toISOString();
+	const existing = await getVocab(word);
+	if (existing) {
+		const entry: VocabEntry = { ...existing, lastSeenAt: now };
+		await putVocab(entry);
+		return entry;
+	}
+	const entry: VocabEntry = {
+		word,
+		firstContext: args.sentence ?? '',
+		meaningNative: '',
+		meaningSimple: '',
+		taps: 0,
+		exposures: 1,
+		status: 'new',
+		lastSeenAt: now
+	};
+	await putVocab(entry);
+	return entry;
+}
+
+/** Fill in the meaning of a word that was saved without one. */
+export async function attachMeaning(
+	word: string,
+	meaning: { native: string; simple: string }
+): Promise<void> {
+	const existing = await getVocab(word);
+	if (!existing) return;
+	await putVocab({
+		...existing,
+		meaningNative: meaning.native,
+		meaningSimple: meaning.simple
+	});
+}
+
+export async function removeVocab(word: string): Promise<void> {
+	await (await db()).delete('vocab', word.toLowerCase());
+}
+
 /* --- tracks -------------------------------------------------------------- */
 
 export async function allTracks(): Promise<Track[]> {

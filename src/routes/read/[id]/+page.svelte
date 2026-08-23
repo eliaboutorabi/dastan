@@ -4,7 +4,7 @@
 	import { onDestroy } from 'svelte';
 	import WordPopup from '$lib/components/WordPopup.svelte';
 	import { lookupWord, translateSentence } from '$lib/agents/translator';
-	import { getStory, recordWordTap } from '$lib/db';
+	import { allVocab, getStory, getVocab, recordWordTap, saveWordManually } from '$lib/db';
 	import type { StringKey } from '$lib/i18n';
 	import { nativeDir, t, targetDir, uiDir } from '$lib/i18n/ui.svelte';
 	import { MissingKeyError } from '$lib/llm/provider';
@@ -28,6 +28,25 @@
 	let senseLoading = $state(false);
 	let senseError = $state<string | null>(null);
 	let anchor = $state<{ x: number; y: number } | null>(null);
+	let tappedIsKept = $state(false);
+	let toast = $state<string | null>(null);
+	let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+	/**
+	 * A single click asks "what does this mean". A double click says "I want to
+	 * study this" — a different intention, and one that should not cost a
+	 * lookup. Distinguishing them needs a short window before the lookup fires;
+	 * at 200ms it is under the threshold where a delay is felt, and the popup
+	 * would be showing its loading state for far longer than that anyway.
+	 */
+	const DOUBLE_CLICK_MS = 200;
+	let pendingTap: ReturnType<typeof setTimeout> | undefined;
+
+	function showToast(message: string) {
+		toast = message;
+		clearTimeout(toastTimer);
+		toastTimer = setTimeout(() => (toast = null), 2600);
+	}
 
 	// --- sentence translation --------------------------------------------
 	let openSentence = $state<string | null>(null);
@@ -55,6 +74,10 @@
 	});
 
 	$effect(() => {
+		allVocab().then((list) => (kept = new Set(list.map((entry) => entry.word))));
+	});
+
+	$effect(() => {
 		speaker.configure({
 			lang: settings.current.targetLanguage,
 			rate: settings.current.speechRate,
@@ -71,14 +94,44 @@
 		return message;
 	}
 
-	async function onWordTap(event: MouseEvent, token: Token, sentence: Sentence) {
+	function onWordClick(event: MouseEvent, token: Token, sentence: Sentence) {
+		// `detail` counts the clicks in this burst, so a double click is caught
+		// before the first one's lookup has been allowed to start.
+		if (event.detail > 1) {
+			clearTimeout(pendingTap);
+			void keepWord(token, sentence);
+			return;
+		}
 		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+		clearTimeout(pendingTap);
+		pendingTap = setTimeout(() => lookUp(rect, token, sentence), DOUBLE_CLICK_MS);
+	}
+
+	/** Double click: file the word away, no lookup, no API call. */
+	async function keepWord(token: Token, sentence: Sentence) {
+		await saveWordManually({ word: token.text, sentence: sentence.text });
+		kept = new Set([...kept, token.text.toLowerCase()]);
+		showToast(t('reader.keptToast', { word: token.text }));
+	}
+
+	/** Words already in the learner's list, so the page can mark them. */
+	let kept = $state<Set<string>>(new Set());
+
+	async function keepFromPopup() {
+		if (!tappedWord) return;
+		await saveWordManually({ word: tappedWord, sentence: tappedSentence });
+		kept = new Set([...kept, tappedWord.toLowerCase()]);
+		tappedIsKept = true;
+	}
+
+	async function lookUp(rect: DOMRect, token: Token, sentence: Sentence) {
 		anchor = { x: rect.left + rect.width / 2, y: rect.top };
 		tappedWord = token.text;
 		tappedSentence = sentence.text;
 		sense = null;
 		senseError = null;
 		senseLoading = true;
+		tappedIsKept = Boolean(await getVocab(token.text));
 
 		try {
 			const result = await lookupWord(token.text, sentence.text);
@@ -91,6 +144,8 @@
 				meaningNative: result.native,
 				meaningSimple: result.simple
 			});
+			kept = new Set([...kept, token.text.toLowerCase()]);
+			tappedIsKept = true;
 			if (story) {
 				const updated = { ...story, tapCount: story.tapCount + 1 };
 				story = updated;
@@ -229,7 +284,11 @@
 			<p class="native-title" dir={nativeDir()} lang={settings.current.nativeLanguage}>
 				{story.titleNative}
 			</p>
-			<p class="hint" dir={uiDir()}>{t('reader.tapHint')} {t('reader.sentenceHint')}</p>
+			<p class="hint" dir={uiDir()}>
+				{t('reader.tapHint')}
+				{t('reader.sentenceHint')}
+				<span class="hint-desktop">{t('reader.dblHint')}</span>
+			</p>
 
 			{#each parsed.paragraphs as paragraph (paragraph.start)}
 				<p class="para">
@@ -239,7 +298,8 @@
 										class="word"
 										class:bold={token.bold}
 										class:speaking={speaker.cursor >= token.start && speaker.cursor < token.end}
-										onclick={(event) => onWordTap(event, token, sentence)}>{token.text}</button
+										class:kept={kept.has(token.text.toLowerCase())}
+										onclick={(event) => onWordClick(event, token, sentence)}>{token.text}</button
 									>{:else}<span class="gap">{token.text}</span>{/if}{/each}<button
 							type="button"
 							class="pilcrow"
@@ -375,6 +435,10 @@
 	{/if}
 </div>
 
+{#if toast}
+	<div class="toast" role="status" aria-live="polite">{toast}</div>
+{/if}
+
 {#if tappedWord}
 	<WordPopup
 		word={tappedWord}
@@ -382,6 +446,8 @@
 		loading={senseLoading}
 		error={senseError}
 		{anchor}
+		kept={tappedIsKept}
+		onkeep={keepFromPopup}
 		onclose={closePopup}
 	/>
 {/if}
@@ -475,6 +541,16 @@
 
 	.word:hover {
 		background: var(--lapis-wash);
+	}
+
+	/* A word already in the learner's list carries a quiet mark, so the page
+	   shows what has been collected without shouting about it. */
+	.word.kept {
+		box-shadow: inset 0 -2px 0 var(--lapis-soft);
+	}
+
+	.word {
+		touch-action: manipulation;
 	}
 
 	.word.bold {
@@ -707,6 +783,31 @@
 
 	.swatch.on {
 		box-shadow: inset 0 0 0 3px var(--saffron);
+	}
+
+	.toast {
+		position: fixed;
+		z-index: 45;
+		left: 50%;
+		transform: translateX(-50%);
+		bottom: calc(96px + env(safe-area-inset-bottom));
+		max-width: calc(100vw - 2 * var(--s4));
+		padding: var(--s2) var(--s4);
+		border-radius: 999px;
+		background: var(--ink);
+		color: var(--paper);
+		font-size: var(--text-sm);
+		box-shadow: var(--shadow-pop);
+	}
+
+	.hint-desktop {
+		display: none;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.hint-desktop {
+			display: inline;
+		}
 	}
 
 	.unsupported,

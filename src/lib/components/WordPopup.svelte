@@ -11,10 +11,13 @@
 		error: string | null;
 		/** Where the tapped word sits on screen, for the anchored layout. */
 		anchor: { x: number; y: number } | null;
+		/** True when this word is already in the learner's word list. */
+		kept: boolean;
+		onkeep: () => void;
 		onclose: () => void;
 	}
 
-	let { word, sense, loading, error, anchor, onclose }: Props = $props();
+	let { word, sense, loading, error, anchor, kept, onkeep, onclose }: Props = $props();
 
 
 	let card = $state<HTMLDivElement | null>(null);
@@ -108,9 +111,24 @@
 		{/if}
 	</div>
 
-	<button class="btn btn-primary got-it" type="button" onclick={onclose}>
-		{t('reader.gotIt')}
-	</button>
+	<div class="foot">
+		<!-- Looking a word up files it automatically, so this is mostly a state
+		     to read rather than a button to press — but it stays pressable for
+		     the case where a word was never looked up at all. -->
+		<button class="btn keep" class:on={kept} type="button" onclick={onkeep} disabled={kept}>
+			{#if kept}
+				<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
+					><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" /></svg
+				>
+				{t('reader.kept')}
+			{:else}
+				{t('reader.keep')}
+			{/if}
+		</button>
+		<button class="btn btn-primary got-it" type="button" onclick={onclose}>
+			{t('reader.gotIt')}
+		</button>
+	</div>
 </div>
 
 <style>
@@ -224,8 +242,29 @@
 		line-height: 1.55;
 	}
 
+	.foot {
+		display: flex;
+		gap: var(--s2);
+		margin-top: var(--s2);
+	}
+
 	.got-it {
-		width: 100%;
-		margin-top: 0.5rem;
+		flex: 1;
+	}
+
+	.keep {
+		flex: 1;
+		font-size: var(--text-sm);
+	}
+
+	.keep.on {
+		color: var(--lapis);
+		border-color: var(--lapis-wash);
+		background: var(--lapis-wash);
+		opacity: 1;
+	}
+
+	.keep.on :global(svg) {
+		flex: none;
 	}
 </style>
