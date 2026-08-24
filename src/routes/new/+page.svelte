@@ -13,6 +13,9 @@
 	import { t } from '$lib/i18n/ui.svelte';
 	import { MissingKeyError } from '$lib/llm/provider';
 	import { library } from '$lib/stores/library.svelte';
+	import { Dictation } from '$lib/speech/dictation.svelte';
+	import { languageName } from '$lib/i18n';
+	import { settings } from '$lib/settings/store.svelte';
 	import type { Book, Source, SourceKind } from '$lib/types';
 
 	type Stage = 'choose' | 'ready' | 'planning' | 'approve' | 'writing' | 'done';
@@ -31,6 +34,22 @@
 	// --- typed sources ----------------------------------------------------
 	let topic = $state('');
 	let pastedText = $state('');
+
+	// --- spoken sources ---------------------------------------------------
+	// Recognised speech is appended to whatever is already in the box, never
+	// substituted for it, so a story can be half spoken and half typed and
+	// nothing the learner wrote by hand is ever overwritten.
+	const dictation = new Dictation((text) => {
+		if (!text) return;
+		pastedText = pastedText ? `${pastedText.trimEnd()} ${text}` : text;
+	});
+
+	const voiceSupported = Dictation.supported;
+
+	function toggleDictation() {
+		if (dictation.listening) dictation.stop();
+		else dictation.start(settings.current.nativeLanguage);
+	}
 
 	// --- planning & approval ---------------------------------------------
 	let source = $state<Source | null>(null);
@@ -244,11 +263,64 @@
 				</label>
 
 				{#if kind === 'life'}
-					<label class="field">
+					<div class="field">
 						<span class="field-label">{t('source.life')}</span>
-						<textarea bind:value={pastedText} rows="10"></textarea>
-						<span class="field-hint">{t('source.life.blurb')}</span>
-					</label>
+
+						<div class="tell">
+							<textarea bind:value={pastedText} rows="10"></textarea>
+
+							{#if voiceSupported}
+								<button
+									type="button"
+									class="mic"
+									class:on={dictation.listening}
+									onclick={toggleDictation}
+									aria-pressed={dictation.listening}
+									aria-label={dictation.listening ? t('voice.stop') : t('voice.speak')}
+									title={dictation.listening ? t('voice.stop') : t('voice.speak')}
+								>
+									{#if dictation.listening}
+										<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+											<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" />
+										</svg>
+									{:else}
+										<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+											<path
+												d="M12 4a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3z"
+												fill="currentColor"
+											/>
+											<path
+												d="M6 11v1a6 6 0 0 0 12 0v-1M12 18v3"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="1.8"
+												stroke-linecap="round"
+											/>
+										</svg>
+									{/if}
+								</button>
+							{/if}
+						</div>
+
+						{#if dictation.listening}
+							<p class="listening" role="status" aria-live="polite">
+								<span class="pulse" aria-hidden="true"></span>
+								{t('voice.listening')}
+								{#if dictation.interim}<em>{dictation.interim}</em>{/if}
+							</p>
+						{/if}
+
+						{#if dictation.error}
+							<p class="notice notice-bad">{t(`voice.${dictation.error}` as StringKey)}</p>
+						{:else if voiceSupported}
+							<span class="field-hint">
+								{t('voice.hint', { lang: languageName(settings.current.targetLanguage) })}
+								{t('voice.quality')}
+							</span>
+						{:else}
+							<span class="field-hint">{t('voice.unsupported')}</span>
+						{/if}
+					</div>
 				{/if}
 
 				<button class="btn btn-primary" onclick={plan} disabled={!canPlan}>
@@ -422,6 +494,78 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--s2);
+	}
+
+	/* The microphone sits inside the corner of the box it fills, so the two
+	   read as one instrument rather than a button that happens to be nearby. */
+	.tell {
+		position: relative;
+	}
+
+	.tell textarea {
+		padding-inline-end: 60px;
+	}
+
+	.mic {
+		position: absolute;
+		inset-inline-end: var(--s2);
+		top: var(--s2);
+		width: 42px;
+		height: 42px;
+		display: grid;
+		place-items: center;
+		border: 1px solid var(--rule-strong);
+		border-radius: 50%;
+		background: var(--paper-raised);
+		color: var(--ink-soft);
+		cursor: pointer;
+		transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+	}
+
+	.mic:hover {
+		border-color: var(--lapis);
+		color: var(--lapis);
+	}
+
+	.mic.on {
+		background: var(--alarm);
+		border-color: var(--alarm);
+		color: var(--paper-raised);
+	}
+
+	.listening {
+		display: flex;
+		align-items: center;
+		gap: var(--s2);
+		margin-top: var(--s2);
+		font-size: var(--text-sm);
+		color: var(--ink-soft);
+	}
+
+	.listening em {
+		font-style: normal;
+		color: var(--ink-faint);
+	}
+
+	.pulse {
+		flex: none;
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: var(--alarm);
+		animation: pulse 1.4s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.35;
+			transform: scale(0.8);
+		}
 	}
 
 	.working {
