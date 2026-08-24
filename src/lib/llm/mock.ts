@@ -41,6 +41,12 @@ export class MockChatModel extends BaseChatModel {
 		if (/^\s*PING\s*$/im.test(text)) return 'PONG';
 		if (/diagnostic/i.test(text)) return OFFLINE_HARNESS_NOTE;
 
+		// The offline demo has to be able to walk the whole book flow, or the
+		// approval gate and the reader can never be seen without paying for a
+		// key. These replies are canned and say so.
+		if (/"bookTitle"/.test(text)) return demoOutline(text);
+		if (/"targetWords"/.test(text)) return demoStory(text);
+
 		const wordMatch = text.match(/WORD:\s*(.+)/i);
 		if (wordMatch) {
 			const word = wordMatch[1].trim().toLowerCase().replace(/[^\p{L}\p{N}'’-]/gu, '');
@@ -73,6 +79,65 @@ function contentToText(content: BaseMessage['content']): string {
 }
 
 const OFFLINE_NOTICE = 'حالت نمایش آفلاین: برای ترجمهٔ واقعی، کلید API را در تنظیمات بگذار.';
+
+/** Pull the subject out of the prompt so the demo book is at least on topic. */
+function subjectOf(prompt: string): string {
+	const quoted = prompt.match(/vocabulary of "([^"]+)"/) ?? prompt.match(/curious about "([^"]+)"/);
+	if (quoted) return quoted[1];
+	const named = prompt.match(/uploaded: "([^"]+)"/);
+	if (named) return named[1];
+	return 'your material';
+}
+
+function demoOutline(prompt: string): string {
+	const subject = subjectOf(prompt);
+	const beats = [
+		['The First Morning', 'Someone new arrives and nothing is where they expect.'],
+		['The Missing Paper', 'A small thing goes wrong and has to be traced back.'],
+		['The Phone Call', 'A question from outside forces an answer.'],
+		['The Long Afternoon', 'The work is dull until a pattern appears in it.'],
+		['What Was Agreed', 'Two people remember the same promise differently.'],
+		['The Last Check', 'Everything is finished, and then checked once more.']
+	];
+	return JSON.stringify({
+		bookTitle: `A Demo Book about ${subject}`,
+		bookTitleNative: `کتاب نمونه دربارهٔ ${subject}`,
+		stories: beats.map(([title, summary], index) => ({
+			seq: index + 1,
+			title,
+			titleNative: title,
+			summary,
+			level: 3 + index * 3
+		})),
+		note: OFFLINE_BOOK_NOTE
+	});
+}
+
+function demoStory(prompt: string): string {
+	const subject = subjectOf(prompt);
+	const seq = prompt.match(/story (\d+) of/i)?.[1] ?? '1';
+	const body = [
+		`This is story ${seq} of a demo book about ${subject}.`,
+		'',
+		'Nadia opened the door of the small office. The light was already on. Someone had been there before her, and the **ledger** was open on the desk.',
+		'',
+		'She sat down and read the last line twice. A number was missing. Not a big number, but a missing one, and a missing number is never small.',
+		'',
+		'She made tea. Then she started at the beginning, the way she always did, and by ten o\'clock she had found it.',
+		'',
+		'It was a real story once. This one is a demonstration: add your API key in Settings and Dastan will write you a real book.'
+	].join('\n');
+	return JSON.stringify({
+		title: `Demo Story ${seq}`,
+		titleNative: `داستان نمونه ${seq}`,
+		body,
+		targetWords: ['ledger'],
+		glossary: { ledger: 'دفتر حساب — دفتری که پول آمده و رفته در آن نوشته می‌شود' }
+	});
+}
+
+const OFFLINE_BOOK_NOTE =
+	'این یک کتاب نمونه در حالت آفلاین است. برای نوشتن کتاب واقعی، کلید API را در تنظیمات بگذار.';
 
 const OFFLINE_HARNESS_NOTE =
 	'موتور عامل‌ها در مرورگر ساخته و اجرا شد. برای آزمایش ابزارها، کلید API لازم است.';

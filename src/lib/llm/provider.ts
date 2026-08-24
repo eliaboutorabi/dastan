@@ -5,7 +5,11 @@ import { MockChatModel } from './mock';
 import { settings, type ProviderId } from '$lib/settings/store.svelte';
 
 export interface ModelOptions {
-	/** Higher for authoring, near zero for translation. */
+	/**
+	 * Only honoured by providers that still accept sampling parameters. The
+	 * current Claude models removed them, so this is deliberately ignored for
+	 * Anthropic rather than sent and rejected.
+	 */
 	temperature?: number;
 	maxTokens?: number;
 }
@@ -31,8 +35,7 @@ export class MissingKeyError extends Error {
  */
 export function createChatModel(options: ModelOptions = {}): BaseChatModel {
 	const { provider, apiKey, model } = settings.current;
-	const temperature = options.temperature ?? 0;
-	const maxTokens = options.maxTokens ?? 1024;
+	const maxTokens = options.maxTokens ?? 2048;
 
 	if (provider === 'mock') return new MockChatModel({});
 
@@ -43,16 +46,23 @@ export function createChatModel(options: ModelOptions = {}): BaseChatModel {
 		return new ChatOpenAI({
 			apiKey: key,
 			model,
-			temperature,
+			temperature: options.temperature ?? 0,
 			maxTokens,
 			configuration: { dangerouslyAllowBrowser: true }
 		});
 	}
 
+	/*
+	 * No `temperature` here, on purpose. The current Claude models removed the
+	 * sampling parameters, and sending one is not ignored — it is a 400 that
+	 * fails the whole request. Since the model name is a free-text field the
+	 * learner can edit, there is no safe way to know which family they have
+	 * typed, so the parameter is simply never sent and each model's own
+	 * default is used.
+	 */
 	return new ChatAnthropic({
 		apiKey: key,
 		model,
-		temperature,
 		maxTokens,
 		clientOptions: {
 			dangerouslyAllowBrowser: true,

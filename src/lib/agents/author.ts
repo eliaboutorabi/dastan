@@ -38,6 +38,46 @@ function parseJsonObject<T>(raw: string): T | null {
 	}
 }
 
+/**
+ * What actually came back, trimmed down enough to put in front of a learner.
+ *
+ * A bare "that did not work" is the most frustrating possible failure: it
+ * gives neither of us anything to act on. Showing the first line of the reply
+ * distinguishes a refusal from a truncation from a model that answered in
+ * prose, which are three different problems with three different fixes.
+ */
+function describeReply(raw: string): string {
+	const clean = raw.trim().replace(/\s+/g, ' ');
+	if (!clean) return 'the model replied with nothing at all';
+	return `the model replied: “${clean.slice(0, 160)}${clean.length > 160 ? '…' : ''}”`;
+}
+
+const JSON_REMINDER =
+	'\n\nYour last reply could not be read as JSON. Reply with the JSON object only — no explanation before it, no markdown fence around it, and nothing after it.';
+
+/**
+ * Ask, and if the reply cannot be parsed, ask once more with the format spelt
+ * out. Models occasionally wrap the object in prose; a single corrective retry
+ * costs one call and rescues most of those.
+ */
+async function askForJson<T>(args: {
+	system: string;
+	human: string;
+	maxTokens: number;
+}): Promise<{ parsed: T | null; raw: string }> {
+	const model = createChatModel({ maxTokens: args.maxTokens });
+
+	let raw = messageText((await model.invoke([['system', args.system], ['human', args.human]])).content);
+	let parsed = parseJsonObject<T>(raw);
+	if (parsed) return { parsed, raw };
+
+	raw = messageText(
+		(await model.invoke([['system', args.system + JSON_REMINDER], ['human', args.human]])).content
+	);
+	parsed = parseJsonObject<T>(raw);
+	return { parsed, raw };
+}
+
 function id(prefix: string): string {
 	return `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
 }
@@ -85,23 +125,23 @@ export async function planBook(
 		? `\n\nThe learner has asked for about ${options.targetCount} stories. Honour that if the material can carry it; if it genuinely cannot, come closer to it than you otherwise would and say so in your note.`
 		: '';
 
-	const model = createChatModel({ temperature: 0.6, maxTokens: 4000 });
-	const response = await model.invoke([
-		[
-			'system',
+	const { parsed, raw } = await askForJson<OutlineReply>({
+		system:
 			bookOutlineSystemPrompt({
 				source: brief,
 				nativeLanguageName: languageName(settings.current.nativeLanguage),
 				targetLanguageName: languageName(settings.current.targetLanguage),
 				startLevel
-			}) + countInstruction
-		],
-		['human', `MATERIAL:\n\n${brief.material}`]
-	]);
+			}) + countInstruction,
+		human: `MATERIAL:\n\n${brief.material}`,
+		// Room for a long outline plus whatever thinking the model does first.
+		// Too small a ceiling truncates the JSON mid-object, which reads as a
+		// parse failure and hides the real cause.
+		maxTokens: 12000
+	});
 
-	const parsed = parseJsonObject<OutlineReply>(messageText(response.content));
 	if (!parsed?.stories?.length) {
-		throw new Error('The author did not return a usable plan. Try again.');
+		throw new Error(`The plan came back in a shape I could not read — ${describeReply(raw)}`);
 	}
 
 	// The author chooses the count; the app owns the ladder, so the levels are
@@ -165,14 +205,15 @@ export async function writeStory(args: {
 		voice: source.kind === 'life' ? 'first-person' : 'third-person'
 	};
 
-	const model = createChatModel({ temperature: 0.75, maxTokens: 4000 });
-	const response = await model.invoke([
-		['system', storySystemPrompt(request)],
-		['human', `Write story ${entry.seq}: ${entry.title}`]
-	]);
+	const { parsed, raw } = await askForJson<StoryReply>({
+		system: storySystemPrompt(request),
+		human: `Write story ${entry.seq}: ${entry.title}`,
+		maxTokens: 12000
+	});
 
-	const parsed = parseJsonObject<StoryReply>(messageText(response.content));
-	if (!parsed?.body) throw new Error(`Story ${entry.seq} came back empty. Try again.`);
+	if (!parsed?.body) {
+		throw new Error(`Story ${entry.seq} came back in a shape I could not read — ${describeReply(raw)}`);
+	}
 
 	return {
 		id: id('story'),
