@@ -24,6 +24,8 @@ export const en = {
 	'source.life.blurb': 'Talk to the agent about your life — in your own language — and it writes your book.',
 	'source.document': 'Upload a document',
 	'source.document.blurb': 'A resume, a research paper, an article, your notes. PDF, Word, or plain text.',
+	'source.life.label': 'Your life, in your own words',
+	'source.life.placeholder': 'Where you grew up, who was around you, what you studied, why you left, what the first week here was like…',
 	'source.career': 'Learn a field',
 	'source.career.blurb': 'Name a subject like "accounts payable" and learn its words inside stories.',
 	'source.topic': 'Ask about anything',

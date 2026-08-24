@@ -170,7 +170,11 @@
 	}
 
 	const canPlan = $derived(
-		kind === 'document' ? Boolean(extracted) : topic.trim().length > 1 || pastedText.trim().length > 40
+		kind === 'document'
+			? Boolean(extracted)
+			: kind === 'life'
+				? pastedText.trim().length > 40
+				: topic.trim().length > 1
 	);
 </script>
 
@@ -253,21 +257,27 @@
 			{/if}
 		{:else}
 			<div class="card">
-				<label class="field">
-					<span class="field-label">{t(`source.${kind}` as StringKey)}</span>
-					<input
-						type="text"
-						bind:value={topic}
-						placeholder={kind === 'career' ? 'accounts payable' : 'how bridges are built'}
-					/>
-				</label>
+				{#if kind !== 'life'}
+					<!-- A life needs no subject line; the other two are *about*
+					     something, and that something is the whole input. -->
+					<label class="field">
+						<span class="field-label">{t(`source.${kind}` as StringKey)}</span>
+						<input
+							type="text"
+							bind:value={topic}
+							placeholder={kind === 'career' ? 'accounts payable' : 'how bridges are built'}
+						/>
+						<span class="field-hint">{t(`source.${kind}.blurb` as StringKey)}</span>
+					</label>
+				{/if}
 
 				{#if kind === 'life'}
 					<div class="field">
-						<span class="field-label">{t('source.life')}</span>
+						<span class="field-label">{t('source.life.label')}</span>
 
 						<div class="tell">
-							<textarea bind:value={pastedText} rows="10"></textarea>
+							<textarea bind:value={pastedText} rows="10" placeholder={t('source.life.placeholder')}
+							></textarea>
 
 							{#if voiceSupported}
 								<button

@@ -26,6 +26,8 @@ export const fa: Record<StringKey, string> = {
 	'source.life.blurb': 'دربارهٔ زندگی‌ات با عامل حرف بزن — به زبان خودت — و او کتابت را می‌نویسد.',
 	'source.document': 'بارگذاری سند',
 	'source.document.blurb': 'رزومه، مقاله، یادداشت. PDF، ورد یا متن ساده.',
+	'source.life.label': 'زندگی‌ات، به زبان خودت',
+	'source.life.placeholder': 'کجا بزرگ شدی، چه کسانی دورت بودند، چه خواندی، چرا آمدی، هفتهٔ اول اینجا چطور بود…',
 	'source.career': 'یک رشته را یاد بگیر',
 	'source.career.blurb': 'موضوعی مثل «حساب‌های پرداختنی» را نام ببر و واژه‌هایش را داخل داستان یاد بگیر.',
 	'source.topic': 'دربارهٔ هر چیزی بپرس',
