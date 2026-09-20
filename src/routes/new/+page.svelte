@@ -14,6 +14,8 @@
 	import { MissingKeyError } from '$lib/llm/provider';
 	import { library } from '$lib/stores/library.svelte';
 	import { Dictation } from '$lib/speech/dictation.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { CloudUploadIcon, Mic01Icon, StopIcon } from '@hugeicons/core-free-icons';
 	import { languageName } from '$lib/i18n';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { Book, Source, SourceKind } from '$lib/types';
@@ -232,14 +234,7 @@
 					ondragleave={() => (dragging = false)}
 					ondrop={onDrop}
 				>
-					<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
-						<path
-							d="M12 3l4 4h-3v7h-2V7H8zM5 17h14v2H5z"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.6"
-						/>
-					</svg>
+					<Icon icon={CloudUploadIcon} size={34} />
 					<p class="drop-title">{t('upload.drop')}</p>
 					<p class="drop-types">{t('upload.types')}</p>
 					<label class="btn btn-primary">
@@ -289,25 +284,7 @@
 									aria-label={dictation.listening ? t('voice.stop') : t('voice.speak')}
 									title={dictation.listening ? t('voice.stop') : t('voice.speak')}
 								>
-									{#if dictation.listening}
-										<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-											<rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" />
-										</svg>
-									{:else}
-										<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-											<path
-												d="M12 4a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3z"
-												fill="currentColor"
-											/>
-											<path
-												d="M6 11v1a6 6 0 0 0 12 0v-1M12 18v3"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="1.8"
-												stroke-linecap="round"
-											/>
-										</svg>
-									{/if}
+									<Icon icon={dictation.listening ? StopIcon : Mic01Icon} size={20} />
 								</button>
 							{/if}
 						</div>

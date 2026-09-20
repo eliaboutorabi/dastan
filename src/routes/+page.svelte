@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import Spine from '$lib/components/Spine.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { PlusSignIcon } from '@hugeicons/core-free-icons';
 	import { library, SHELVES } from '$lib/stores/library.svelte';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { StringKey } from '$lib/i18n';
@@ -50,9 +52,7 @@
 					aria-label={t('shelf.new')}
 					title={t('shelf.new')}
 				>
-					<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
-						><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor" /></svg
-					>
+					<Icon icon={PlusSignIcon} size={16} />
 					<span class="add-label">{t('shelf.new')}</span>
 				</a>
 			</div>

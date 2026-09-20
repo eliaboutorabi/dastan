@@ -21,6 +21,8 @@
 		"vite": "^8.0.16"
 	},
 	"dependencies": {
+		"@hugeicons/core-free-icons": "^4.3.4",
+		"@hugeicons/svelte": "^1.1.5",
 		"@langchain/anthropic": "^1.5.8",
 		"@langchain/core": "^1.2.9",
 		"@langchain/langgraph": "^1.4.12",

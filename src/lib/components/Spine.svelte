@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Story } from '$lib/types';
+	import Icon from '$lib/components/Icon.svelte';
+	import { SquareLock01Icon } from '@hugeicons/core-free-icons';
 
 	interface Props {
 		story: Story;
@@ -55,9 +57,7 @@
 	<span class="title">{story.title}</span>
 
 	{#if locked}
-		<svg class="lock" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-			<path d="M7 10V8a5 5 0 0 1 10 0v2h1v10H6V10zm2 0h6V8a3 3 0 0 0-6 0z" />
-		</svg>
+		<span class="lock"><Icon icon={SquareLock01Icon} size={14} /></span>
 	{:else}
 		<span class="level">{story.level}</span>
 	{/if}
@@ -163,7 +163,8 @@
 	}
 
 	.lock {
-		fill: var(--ink-faint);
+		color: var(--ink-faint);
 		display: block;
+		line-height: 0;
 	}
 </style>

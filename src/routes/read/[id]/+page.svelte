@@ -3,6 +3,13 @@
 	import { page } from '$app/state';
 	import { onDestroy } from 'svelte';
 	import WordPopup from '$lib/components/WordPopup.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import {
+		ArrowLeft01Icon,
+		CheckmarkCircle02Icon,
+		PauseIcon,
+		PlayIcon
+	} from '@hugeicons/core-free-icons';
 	import { lookupWord, translateSentence } from '$lib/agents/translator';
 	import { allVocab, getStory, getVocab, recordWordTap, saveWordManually } from '$lib/db';
 	import type { StringKey } from '$lib/i18n';
@@ -269,9 +276,7 @@
 <div class="reader" dir={targetDir()}>
 	<header dir={uiDir()}>
 		<a class="back" href="{base}/" aria-label={t('nav.back')}>
-			<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-				<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" />
-			</svg>
+			<Icon icon={ArrowLeft01Icon} size={20} />
 			{t('nav.back')}
 		</a>
 	</header>
@@ -345,10 +350,7 @@
 			<div class="finish" dir={uiDir()}>
 				{#if finished}
 					<div class="celebration">
-						<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true">
-							<circle cx="20" cy="20" r="17" fill="none" stroke="var(--saffron)" stroke-width="2" />
-							<path d="M13 20.5l5 5 9-11" fill="none" stroke="var(--lapis)" stroke-width="2.5" />
-						</svg>
+						<span class="celebration-mark"><Icon icon={CheckmarkCircle02Icon} size={34} /></span>
 						<p class="celebration-title">{t('reader.finished.title')}</p>
 						<p>{calibrationNote}</p>
 						{#if unlocking}
@@ -381,15 +383,10 @@
 					onclick={togglePlay}
 					aria-label={speaker.speaking && !speaker.paused ? t('reader.pause') : t('reader.play')}
 				>
-					{#if speaker.speaking && !speaker.paused}
-						<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
-							><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg
-						>
-					{:else}
-						<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"
-							><path d="M7 4l13 8-13 8z" /></svg
-						>
-					{/if}
+					<Icon
+						icon={speaker.speaking && !speaker.paused ? PauseIcon : PlayIcon}
+						size={22}
+					/>
 				</button>
 
 				<div class="group" role="group" aria-label={t('reader.speed')}>
@@ -677,6 +674,11 @@
 		color: var(--ink) !important;
 	}
 
+	.celebration-mark {
+		color: var(--saffron);
+		line-height: 0;
+	}
+
 	.celebration-actions {
 		display: flex;
 		flex-wrap: wrap;
@@ -734,7 +736,7 @@
 		border: none;
 		border-radius: 50%;
 		background: var(--lapis);
-		fill: var(--paper);
+		color: var(--on-lapis);
 		cursor: pointer;
 	}
 

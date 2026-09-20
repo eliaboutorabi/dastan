@@ -2,6 +2,8 @@
 	import { settings } from '$lib/settings/store.svelte';
 	import { nativeDir, t, targetDir } from '$lib/i18n/ui.svelte';
 	import { Speaker } from '$lib/reader/tts.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { Tick02Icon, VolumeHighIcon } from '@hugeicons/core-free-icons';
 	import type { WordSense } from '$lib/types';
 
 	interface Props {
@@ -74,9 +76,7 @@
 	<div class="head">
 		<span class="word" lang={settings.current.targetLanguage} dir="ltr">{word}</span>
 		<button class="icon" type="button" onclick={speak} aria-label={t('reader.speak')}>
-			<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-				<path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4" />
-			</svg>
+			<Icon icon={VolumeHighIcon} size={20} />
 		</button>
 	</div>
 
@@ -117,9 +117,7 @@
 		     the case where a word was never looked up at all. -->
 		<button class="btn keep" class:on={kept} type="button" onclick={onkeep} disabled={kept}>
 			{#if kept}
-				<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"
-					><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" /></svg
-				>
+				<Icon icon={Tick02Icon} size={16} />
 				{t('reader.kept')}
 			{:else}
 				{t('reader.keep')}
@@ -184,7 +182,7 @@
 		border: none;
 		border-radius: 50%;
 		background: var(--lapis-wash);
-		fill: var(--lapis);
+		color: var(--lapis);
 		cursor: pointer;
 	}
 

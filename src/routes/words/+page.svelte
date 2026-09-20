@@ -5,6 +5,8 @@
 	import type { StringKey } from '$lib/i18n';
 	import { nativeDir, t, targetDir, uiDir } from '$lib/i18n/ui.svelte';
 	import { Speaker } from '$lib/reader/tts.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { Delete02Icon, VolumeHighIcon } from '@hugeicons/core-free-icons';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { VocabEntry } from '$lib/types';
 
@@ -126,11 +128,7 @@
 											0.85
 										)}
 								>
-									<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-										<path
-											d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4"
-										/>
-									</svg>
+									<Icon icon={VolumeHighIcon} size={18} />
 								</button>
 								<button
 									class="icon remove"
@@ -139,9 +137,7 @@
 									title={t('words.remove')}
 									onclick={() => remove(entry)}
 								>
-									<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-										<path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" />
-									</svg>
+									<Icon icon={Delete02Icon} size={16} />
 								</button>
 							</div>
 							{#if entry.meaningSimple}
@@ -221,15 +217,14 @@
 
 	.remove {
 		background: transparent;
-		fill: none;
-		stroke: var(--ink-faint);
+		color: var(--ink-faint);
 		width: 28px;
 		height: 28px;
 	}
 
 	.remove:hover {
 		background: var(--alarm-wash);
-		stroke: var(--alarm);
+		color: var(--alarm);
 	}
 
 	section h2 {
@@ -285,7 +280,7 @@
 		border: none;
 		border-radius: 50%;
 		background: var(--lapis-wash);
-		fill: var(--lapis);
+		color: var(--lapis);
 		cursor: pointer;
 	}
 

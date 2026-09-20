@@ -6,6 +6,14 @@
 	import type { StringKey } from '$lib/i18n';
 	import { t, uiDir } from '$lib/i18n/ui.svelte';
 	import { library } from '$lib/stores/library.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import type { IconSvgElement } from '@hugeicons/svelte';
+	import {
+		Bookshelf03Icon,
+		LibraryIcon,
+		Settings02Icon,
+		TranslateIcon
+	} from '@hugeicons/core-free-icons';
 
 	let { children } = $props();
 
@@ -28,14 +36,14 @@
 	interface Nav {
 		href: string;
 		key: StringKey;
-		glyph: 'shelf' | 'library' | 'words' | 'settings';
+		icon: IconSvgElement;
 	}
 
 	const navItems: Nav[] = [
-		{ href: `${base}/`, key: 'nav.shelf', glyph: 'shelf' },
-		{ href: `${base}/library/`, key: 'nav.library', glyph: 'library' },
-		{ href: `${base}/words/`, key: 'nav.words', glyph: 'words' },
-		{ href: `${base}/settings/`, key: 'nav.settings', glyph: 'settings' }
+		{ href: `${base}/`, key: 'nav.shelf', icon: Bookshelf03Icon },
+		{ href: `${base}/library/`, key: 'nav.library', icon: LibraryIcon },
+		{ href: `${base}/words/`, key: 'nav.words', icon: TranslateIcon },
+		{ href: `${base}/settings/`, key: 'nav.settings', icon: Settings02Icon }
 	];
 
 	const isActive = (href: string) =>
@@ -48,21 +56,6 @@
 	<title>{t('app.name')} — {t('app.tagline')}</title>
 </svelte:head>
 
-{#snippet glyph(name: Nav['glyph'])}
-	<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
-		{#if name === 'shelf'}
-			<path d="M4 4h4v16H4zM10 4h4v16h-4zM16.5 5l3.6 1-3 15-3.6-1z" />
-		{:else if name === 'library'}
-			<path d="M4 5h13v2H4zm0 4h13v2H4zm0 4h9v2H4zm15-8 2 .5-2.6 13-2-.5z" />
-		{:else if name === 'words'}
-			<path d="M4 5h16v2H4zM4 11h11v2H4zM4 17h7v2H4z" />
-		{:else}
-			<path
-				d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m9 4-2.1-1.1.4-2.3-2.2-1.3-1.7 1.6L13 8V5.5h-2V8l-2.4.9-1.7-1.6-2.2 1.3.4 2.3L3 12l2.1 1.1-.4 2.3 2.2 1.3 1.7-1.6L11 16v2.5h2V16l2.4-.9 1.7 1.6 2.2-1.3-.4-2.3z"
-			/>
-		{/if}
-	</svg>
-{/snippet}
 
 <div class="app" class:reading={inReader}>
 	{#if !inReader}
@@ -85,7 +78,7 @@
 						class:active={isActive(item.href)}
 						aria-current={isActive(item.href) ? 'page' : undefined}
 					>
-						{@render glyph(item.glyph)}
+						<Icon icon={item.icon} size={20} />
 						<span>{t(item.key)}</span>
 					</a>
 				{/each}
@@ -113,7 +106,7 @@
 					class:active={isActive(item.href)}
 					aria-current={isActive(item.href) ? 'page' : undefined}
 				>
-					{@render glyph(item.glyph)}
+					<Icon icon={item.icon} size={20} />
 					<span>{t(item.key)}</span>
 				</a>
 			{/each}
@@ -169,8 +162,10 @@
 		font-weight: 500;
 	}
 
+	/* Hugeicons are stroke-drawn on `fill="none"`. Forcing a fill here would
+	   turn every outline glyph into a solid blob; colour inherits instead. */
 	.tabbar a :global(svg) {
-		fill: currentColor;
+		flex: none;
 	}
 
 	.tabbar a.active {
@@ -240,7 +235,6 @@
 		}
 
 		.sidebar nav a :global(svg) {
-			fill: currentColor;
 			flex: none;
 		}
 
