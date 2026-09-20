@@ -15,7 +15,9 @@
 	import { library } from '$lib/stores/library.svelte';
 	import { Dictation } from '$lib/speech/dictation.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { CloudUploadIcon, Mic01Icon, StopIcon } from '@hugeicons/core-free-icons';
+	import CloudUploadIcon from '@hugeicons/core-free-icons/CloudUploadIcon';
+	import Mic01Icon from '@hugeicons/core-free-icons/Mic01Icon';
+	import StopIcon from '@hugeicons/core-free-icons/StopIcon';
 	import { languageName } from '$lib/i18n';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { Book, Source, SourceKind } from '$lib/types';

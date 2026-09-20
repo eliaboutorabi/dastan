@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Story } from '$lib/types';
 	import Icon from '$lib/components/Icon.svelte';
-	import { SquareLock01Icon } from '@hugeicons/core-free-icons';
+	import SquareLock01Icon from '@hugeicons/core-free-icons/SquareLock01Icon';
 
 	interface Props {
 		story: Story;

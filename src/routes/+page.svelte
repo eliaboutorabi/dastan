@@ -2,7 +2,7 @@
 	import { base } from '$app/paths';
 	import Spine from '$lib/components/Spine.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { PlusSignIcon } from '@hugeicons/core-free-icons';
+	import PlusSignIcon from '@hugeicons/core-free-icons/PlusSignIcon';
 	import { library, SHELVES } from '$lib/stores/library.svelte';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { StringKey } from '$lib/i18n';

@@ -8,12 +8,10 @@
 	import { library } from '$lib/stores/library.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { IconSvgElement } from '@hugeicons/svelte';
-	import {
-		Bookshelf03Icon,
-		LibraryIcon,
-		Settings02Icon,
-		TranslateIcon
-	} from '@hugeicons/core-free-icons';
+	import Bookshelf03Icon from '@hugeicons/core-free-icons/Bookshelf03Icon';
+	import LibraryIcon from '@hugeicons/core-free-icons/LibraryIcon';
+	import Settings02Icon from '@hugeicons/core-free-icons/Settings02Icon';
+	import TranslateIcon from '@hugeicons/core-free-icons/TranslateIcon';
 
 	let { children } = $props();
 

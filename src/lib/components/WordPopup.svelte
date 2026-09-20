@@ -3,7 +3,8 @@
 	import { nativeDir, t, targetDir } from '$lib/i18n/ui.svelte';
 	import { Speaker } from '$lib/reader/tts.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { Tick02Icon, VolumeHighIcon } from '@hugeicons/core-free-icons';
+	import Tick02Icon from '@hugeicons/core-free-icons/Tick02Icon';
+	import VolumeHighIcon from '@hugeicons/core-free-icons/VolumeHighIcon';
 	import type { WordSense } from '$lib/types';
 
 	interface Props {

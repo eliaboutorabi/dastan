@@ -6,7 +6,8 @@
 	import { nativeDir, t, targetDir, uiDir } from '$lib/i18n/ui.svelte';
 	import { Speaker } from '$lib/reader/tts.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { Delete02Icon, VolumeHighIcon } from '@hugeicons/core-free-icons';
+	import Delete02Icon from '@hugeicons/core-free-icons/Delete02Icon';
+	import VolumeHighIcon from '@hugeicons/core-free-icons/VolumeHighIcon';
 	import { settings } from '$lib/settings/store.svelte';
 	import type { VocabEntry } from '$lib/types';
 

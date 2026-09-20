@@ -4,12 +4,10 @@
 	import { onDestroy } from 'svelte';
 	import WordPopup from '$lib/components/WordPopup.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import {
-		ArrowLeft01Icon,
-		CheckmarkCircle02Icon,
-		PauseIcon,
-		PlayIcon
-	} from '@hugeicons/core-free-icons';
+	import ArrowLeft01Icon from '@hugeicons/core-free-icons/ArrowLeft01Icon';
+	import CheckmarkCircle02Icon from '@hugeicons/core-free-icons/CheckmarkCircle02Icon';
+	import PauseIcon from '@hugeicons/core-free-icons/PauseIcon';
+	import PlayIcon from '@hugeicons/core-free-icons/PlayIcon';
 	import { lookupWord, translateSentence } from '$lib/agents/translator';
 	import { allVocab, getStory, getVocab, recordWordTap, saveWordManually } from '$lib/db';
 	import type { StringKey } from '$lib/i18n';
